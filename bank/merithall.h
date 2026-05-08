@@ -3,6 +3,10 @@
 
 #include <QMainWindow>
 #include <QDate>
+#include <QFrame>
+#include <QLabel>
+#include <QTimer>
+#include <QPropertyAnimation>
 #include "wallet.h"
 #include "instrument.h"
 #include "asset.h"
@@ -34,6 +38,7 @@ private slots:
     void updateAutoIncome();
     void updateMarketEvent();
     void updateDateDisplay();
+    void hideEventPopup();
     void onBankClicked();
     void onExchangeClicked();
     void onShopClicked();
@@ -52,6 +57,16 @@ private:
     double m_autoIncomePerSec;
     QDate m_currentDate;
     int m_dayTickCounter;
+
+    // 事件弹出通知
+    QFrame* m_eventPopup = nullptr;
+    QLabel* m_eventPopupLabel = nullptr;
+    QPropertyAnimation* m_eventAnim = nullptr;
+    QTimer* m_eventHideTimer = nullptr;
+    QString m_lastEventText;
+
+    void setupEventPopup();
+    void showEventPopup(const QString& text);
 };
 
 #endif // MERITHALL_H

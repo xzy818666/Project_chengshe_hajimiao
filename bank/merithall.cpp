@@ -19,6 +19,8 @@ MeritHall::MeritHall(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("赛博功德银行 - 功德堂");
 
+    setupEventPopup();
+
     connect(ui->instrumentButton, &QPushButton::pressed, this, &MeritHall::onInstrumentPressed);
     connect(ui->instrumentButton, &QPushButton::released, this, &MeritHall::onInstrumentReleased);
     connect(ui->bankBtn, &QPushButton::clicked, this, &MeritHall::onBankClicked);
@@ -36,6 +38,67 @@ MeritHall::MeritHall(QWidget *parent)
 MeritHall::~MeritHall()
 {
     delete ui;
+}
+
+void MeritHall::setupEventPopup()
+{
+    m_eventPopup = new QFrame(this);
+    m_eventPopup->setObjectName("eventPopup");
+    m_eventPopup->setStyleSheet(
+        "QFrame#eventPopup {"
+        "  background-color: #FFF3E0;"
+        "  border: 2px solid #E65100;"
+        "  border-radius: 8px;"
+        "}"
+    );
+    m_eventPopup->setFixedHeight(50);
+    m_eventPopup->setGeometry(20, -60, width() - 40, 50);
+
+    QHBoxLayout* popupLayout = new QHBoxLayout(m_eventPopup);
+    popupLayout->setContentsMargins(12, 4, 12, 4);
+
+    m_eventPopupLabel = new QLabel(m_eventPopup);
+    m_eventPopupLabel->setAlignment(Qt::AlignCenter);
+    m_eventPopupLabel->setStyleSheet("color: #BF360C; font-weight: bold; font-size: 14px;");
+    popupLayout->addWidget(m_eventPopupLabel);
+
+    m_eventAnim = new QPropertyAnimation(m_eventPopup, "geometry", this);
+    m_eventAnim->setDuration(400);
+    m_eventAnim->setEasingCurve(QEasingCurve::OutCubic);
+
+    m_eventHideTimer = new QTimer(this);
+    m_eventHideTimer->setSingleShot(true);
+    connect(m_eventHideTimer, &QTimer::timeout, this, &MeritHall::hideEventPopup);
+}
+
+void MeritHall::showEventPopup(const QString& text)
+{
+    if (!m_eventPopup) return;
+
+    m_eventPopupLabel->setText(text);
+    m_eventPopup->raise();
+
+    QRect startRect(20, -60, width() - 40, 50);
+    QRect endRect(20, 10, width() - 40, 50);
+
+    m_eventAnim->setStartValue(startRect);
+    m_eventAnim->setEndValue(endRect);
+    m_eventAnim->start();
+
+    m_eventHideTimer->stop();
+    m_eventHideTimer->start(6000);
+}
+
+void MeritHall::hideEventPopup()
+{
+    if (!m_eventPopup) return;
+
+    QRect startRect(20, 10, width() - 40, 50);
+    QRect endRect(20, -60, width() - 40, 50);
+
+    m_eventAnim->setStartValue(startRect);
+    m_eventAnim->setEndValue(endRect);
+    m_eventAnim->start();
 }
 
 void MeritHall::setWallet(Wallet* wallet)
@@ -65,12 +128,16 @@ void MeritHall::setAchievementManager(AchievementManager* manager)
 
 void MeritHall::onInstrumentPressed()
 {
-    ui->instrumentButton->setStyleSheet("QPushButton { transform: scale(0.95); }");
+    ui->instrumentButton->setStyleSheet(
+        "font-size: 24px; border-radius: 12px; background-color: #281815; color: #FFD700;"
+    );
 }
 
 void MeritHall::onInstrumentReleased()
 {
-    ui->instrumentButton->setStyleSheet("");
+    ui->instrumentButton->setStyleSheet(
+        "font-size: 24px; border-radius: 12px; background-color: #3E2723; color: #FFD700;"
+    );
     onInstrumentClicked();
 }
 
@@ -147,9 +214,9 @@ void MeritHall::updateHUD()
     double yezhang = m_wallet->yezhang();
     ui->yezhangLabel->setText(QString("业障: %1").arg(yezhang, 0, 'f', 0));
     if (yezhang > 0) {
-        ui->yezhangLabel->setStyleSheet("color: red; font-weight: bold;");
+        ui->yezhangLabel->setStyleSheet("color: #EF5350; font-weight: bold;");
     } else {
-        ui->yezhangLabel->setStyleSheet("");
+        ui->yezhangLabel->setStyleSheet("color: #EF5350; font-weight: bold;");
     }
 
     ui->clickCountLabel->setText(QString("今日点击: %1").arg(m_clickCount));
@@ -161,7 +228,7 @@ void MeritHall::updateHUD()
     } else if (m_wallet->dailyInflationRate() > 0.005) {
         ui->inflationLabel->setStyleSheet("color: #F57C00;");
     } else {
-        ui->inflationLabel->setStyleSheet("");
+        ui->inflationLabel->setStyleSheet("color: #B0B0B0;");
     }
 
     if (m_achievementManager) {
@@ -187,12 +254,24 @@ void MeritHall::updateDateDisplay()
 
 void MeritHall::updateMarketEvent()
 {
+    QString eventText;
+    bool hasEvent = false;
+
     if (m_marketEvent && m_marketEvent->isActive()) {
-        ui->eventLabel->setText(m_marketEvent->currentEvent());
-        ui->eventLabel->setStyleSheet("color: orange; font-weight: bold;");
+        eventText = m_marketEvent->currentEvent();
+        hasEvent = true;
+    }
+
+    if (hasEvent) {
+        if (eventText != m_lastEventText) {
+            m_lastEventText = eventText;
+            showEventPopup(eventText);
+        }
     } else {
-        ui->eventLabel->setText("市场平稳运行中...");
-        ui->eventLabel->setStyleSheet("");
+        if (!m_lastEventText.isEmpty()) {
+            m_lastEventText.clear();
+            hideEventPopup();
+        }
     }
 }
 
