@@ -20,11 +20,8 @@ const QVector<double>& Asset::priceHistory() const
 
 double Asset::change24h() const
 {
-    const int DAY_TICKS = 100; // 10 seconds = 100 ticks at 100ms interval
-    int window = qMin(m_priceHistory.size(), DAY_TICKS);
-    if (window < 2) return 0;
-    int start = m_priceHistory.size() - window;
-    double first = m_priceHistory[start];
+    if (m_priceHistory.size() < 2) return 0;
+    double first = m_priceHistory.first();
     double last = m_priceHistory.last();
     return ((last - first) / first) * 100;
 }

@@ -2,20 +2,22 @@
 #define MERITHALL_H
 
 #include <QMainWindow>
+#include <QPushButton>
+#include <QLabel>
 #include <QDate>
 #include <QFrame>
-#include <QLabel>
 #include <QTimer>
 #include <QPropertyAnimation>
 #include "wallet.h"
 #include "instrument.h"
 #include "asset.h"
 #include "marketevent.h"
-#include "achievementmanager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MeritHall; }
 QT_END_NAMESPACE
+
+#include "achievementmanager.h"
 
 class MeritHall : public QMainWindow
 {
@@ -45,18 +47,23 @@ private slots:
     void onYezhangClicked();
     void onAchievementClicked();
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     Ui::MeritHall *ui;
     Wallet* m_wallet;
     Instrument m_currentInstrument;
     QList<Asset*> m_assets;
-    MarketEvent* m_marketEvent = nullptr;
-    AchievementManager* m_achievementManager = nullptr;
-    QTimer* m_updateTimer = nullptr;
+    MarketEvent* m_marketEvent;
+    QTimer* m_updateTimer;
     int m_clickCount;
     double m_autoIncomePerSec;
     QDate m_currentDate;
     int m_dayTickCounter;
+
+    AchievementManager* m_achievementManager = nullptr;
 
     // 事件弹出通知
     QFrame* m_eventPopup = nullptr;
@@ -65,8 +72,20 @@ private:
     QTimer* m_eventHideTimer = nullptr;
     QString m_lastEventText;
 
+    void updateInstrumentIcon();
+    void createPavilionButtons();
+    void updatePavilionPositions();
+    void updateFishGlowPosition();
+    void updateFishClickAreaPosition(QPushButton *btn);
     void setupEventPopup();
     void showEventPopup(const QString& text);
+
+    QPushButton *pavilionBankBtn;
+    QPushButton *pavilionExchangeBtn;
+    QPushButton *pavilionShopBtn;
+    QPushButton *pavilionYezhangBtn;
+    QLabel *m_fishGlowLayer;
+    QPushButton *m_fishClickArea;
 };
 
 #endif // MERITHALL_H

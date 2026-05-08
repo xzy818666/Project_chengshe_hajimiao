@@ -29,8 +29,8 @@ Asset::RiskLevel DharmaFund::riskLevel() const
 void DharmaFund::update(double dt, double marketDrift, double marketVolatility)
 {
     Q_UNUSED(dt);
-    double drift = marketDrift * 0.0002;
-    double volatility = 0.004 * marketVolatility;
+    double drift = marketDrift * 0.0005;
+    double volatility = 0.01 * marketVolatility;
     double random = (rand() / (double)RAND_MAX - 0.5) * 2;
 
     m_price *= (1 + drift + volatility * random);

@@ -29,8 +29,8 @@ Asset::RiskLevel MeritIndex::riskLevel() const
 void MeritIndex::update(double dt, double marketDrift, double marketVolatility)
 {
     Q_UNUSED(dt);
-    double drift = marketDrift * 0.0003;
-    double volatility = 0.008 * marketVolatility;
+    double drift = marketDrift * 0.001;
+    double volatility = 0.02 * marketVolatility;
     double random = (rand() / (double)RAND_MAX - 0.5) * 2;
 
     m_price *= (1 + drift + volatility * random);
