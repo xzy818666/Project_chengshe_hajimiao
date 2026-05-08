@@ -1,0 +1,28 @@
+# Qt 构建产物与本地配置
+build/
+*.pro.user
+*.pro.user.*
+*.qmake.stash
+Makefile*
+*.qm
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+
+# macOS 系统文件
+.DS_Store
+*.app/
+*.dmg
+
+# 编译输出目录
+debug/
+release/
+*.o
+*.obj
+*.exe
+*.out
+
+# IDE 配置
+.vscode/
+.idea/
