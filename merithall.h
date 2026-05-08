@@ -17,7 +17,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MeritHall; }
 QT_END_NAMESPACE
 
-class AchievementManager;
+#include "achievementmanager.h"
 
 class MeritHall : public QMainWindow
 {
