@@ -7,6 +7,11 @@
 #include "asset.h"
 #include "marketevent.h"
 
+class PortfolioAdvisor;
+class ArbitrageScanner;
+class AutoInvestor;
+class QLabel;
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class ExchangeDialog; }
 QT_END_NAMESPACE
@@ -16,7 +21,7 @@ class ExchangeDialog : public QDialog
     Q_OBJECT
 
 public:
-    ExchangeDialog(QWidget *parent = nullptr);
+    explicit ExchangeDialog(QWidget *parent = nullptr);
     ~ExchangeDialog();
 
     void setWallet(Wallet* wallet);
@@ -31,6 +36,10 @@ private slots:
     void updatePortfolio();
     void updateEventTicker();
     void showPortfolioView();
+    void updateAdvice();
+    void updateArbitrage();
+    void onAutoInvestToggled(bool checked);
+    void onAutoInvestSettingsChanged();
 
 private:
     Ui::ExchangeDialog *ui;
@@ -43,6 +52,12 @@ private:
     QPieSeries* m_pieSeries;
     QChart* m_pieChart;
     QTimer* m_updateTimer;
+
+    PortfolioAdvisor* m_advisor;
+    ArbitrageScanner* m_scanner;
+    AutoInvestor* m_autoInvestor;
+    QLabel* m_adviceLabel;
+    QLabel* m_arbitrageLabel;
 
     void updateChart();
     QString riskLevelToString(Asset::RiskLevel level);

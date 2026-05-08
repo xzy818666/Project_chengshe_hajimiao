@@ -27,6 +27,11 @@ public:
 
     double efficiency() const;
 
+    // 通货膨胀
+    double dailyInflationRate() const;
+    void setDailyInflationRate(double rate);
+    void applyInflation(double dt);
+
     void updateDebtInterest();
 
     // 资产持仓
@@ -34,6 +39,10 @@ public:
     double getAssetShares(const QString& assetId) const;
     bool removeAsset(const QString& assetId, double shares);
     const QMap<QString, double>& assets() const;
+
+    // 成本基础与交易记录（成就系统用）
+    void recordAssetBuy(const QString& assetId, double shares, double cost);
+    void recordAssetSell(const QString& assetId, double shares, double revenue);
 
     // 定期存款
     struct FixedDeposit {
@@ -57,6 +66,10 @@ signals:
     void debtChanged(double value);
     void yezhangChanged(double value);
     void assetsChanged();
+    void assetBought(const QString& assetId, double shares, double cost);
+    void assetSold(const QString& assetId, double shares, double revenue, double profit);
+    void borrowed(double amount);
+    void repaid(double amount);
 
 private:
     double m_merit;
@@ -64,13 +77,16 @@ private:
     double m_debt;
     double m_yezhang;
     double m_creditScore;
+    double m_dailyInflationRate;
 
     QMap<QString, double> m_assets;
+    QMap<QString, double> m_assetCostBasis;
     QList<FixedDeposit> m_fixedDeposits;
 
     static const double SAVINGS_RATE;
     static const double LOAN_RATE;
     static const double YEZHANG_CONVERSION_RATE;
+    static const double DEFAULT_DAILY_INFLATION;
 };
 
 #endif // WALLET_H

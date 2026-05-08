@@ -17,32 +17,134 @@
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <widget class="QWidget" name="hudWidget">
-      <layout class="QHBoxLayout" name="hudLayout">
-       <item>
+      <property name="styleSheet">
+       <string>background-color: #2D2D2D; border-radius: 8px; padding: 4px;</string>
+      </property>
+      <layout class="QGridLayout" name="hudLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="dateLabel">
+         <property name="text">
+          <string>2026年01月01日</string>
+         </property>
+         <property name="styleSheet">
+          <string>font-weight: bold; color: #E0E0E0;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
         <widget class="QLabel" name="meritLabel">
          <property name="text">
           <string>功德: 0</string>
          </property>
+         <property name="styleSheet">
+          <string>color: #FFD700; font-weight: bold;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
         </widget>
        </item>
-       <item>
+       <item row="0" column="2">
         <widget class="QLabel" name="assetLabel">
          <property name="text">
           <string>资产市值: 0</string>
          </property>
+         <property name="styleSheet">
+          <string>color: #81C784; font-weight: bold;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
         </widget>
        </item>
-       <item>
+       <item row="0" column="3">
         <widget class="QLabel" name="networthLabel">
          <property name="text">
           <string>净资产: 0</string>
          </property>
+         <property name="styleSheet">
+          <string>color: #4FC3F7; font-weight: bold;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
         </widget>
        </item>
-       <item>
+       <item row="0" column="4">
         <widget class="QLabel" name="yezhangLabel">
          <property name="text">
           <string>业障: 0</string>
+         </property>
+         <property name="styleSheet">
+          <string>color: #EF5350; font-weight: bold;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="clickCountLabel">
+         <property name="text">
+          <string>今日点击: 0</string>
+         </property>
+         <property name="styleSheet">
+          <string>color: #B0B0B0;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="autoIncomeLabel">
+         <property name="text">
+          <string>自动收益: 0/秒</string>
+         </property>
+         <property name="styleSheet">
+          <string>color: #B0B0B0;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="efficiencyLabel">
+         <property name="text">
+          <string>效率系数: 100%</string>
+         </property>
+         <property name="styleSheet">
+          <string>color: #B0B0B0;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QLabel" name="inflationLabel">
+         <property name="text">
+          <string>通胀: 0.00%/日</string>
+         </property>
+         <property name="styleSheet">
+          <string>color: #B0B0B0;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <widget class="QPushButton" name="achievementBtn">
+         <property name="text">
+          <string>🏆 成就榜</string>
+         </property>
+         <property name="styleSheet">
+          <string>background-color: #5D4037; color: #FFD700; border-radius: 4px; padding: 2px 8px;</string>
          </property>
         </widget>
        </item>

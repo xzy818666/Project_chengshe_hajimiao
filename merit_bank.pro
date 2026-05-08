@@ -28,7 +28,12 @@ SOURCES += \
     bankdialog.cpp \
     exchangedialog.cpp \
     shopdialog.cpp \
-    marketevent.cpp
+    marketevent.cpp \
+    achievementmanager.cpp \
+    achievementdialog.cpp \
+    portfolioadvisor.cpp \
+    arbitragescanner.cpp \
+    autoinvestor.cpp
 
 HEADERS += \
     wallet.h \
@@ -42,7 +47,12 @@ HEADERS += \
     bankdialog.h \
     exchangedialog.h \
     shopdialog.h \
-    marketevent.h
+    marketevent.h \
+    achievementmanager.h \
+    achievementdialog.h \
+    portfolioadvisor.h \
+    arbitragescanner.h \
+    autoinvestor.h
 
 FORMS += \
     merithall.ui \

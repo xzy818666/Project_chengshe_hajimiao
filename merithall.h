@@ -4,6 +4,10 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QLabel>
+#include <QDate>
+#include <QFrame>
+#include <QTimer>
+#include <QPropertyAnimation>
 #include "wallet.h"
 #include "instrument.h"
 #include "asset.h"
@@ -12,6 +16,8 @@
 QT_BEGIN_NAMESPACE
 namespace Ui { class MeritHall; }
 QT_END_NAMESPACE
+
+class AchievementManager;
 
 class MeritHall : public QMainWindow
 {
@@ -24,6 +30,7 @@ public:
     void setWallet(Wallet* wallet);
     void setAssets(QList<Asset*> assets);
     void setMarketEvent(MarketEvent* marketEvent);
+    void setAchievementManager(AchievementManager* manager);
 
 private slots:
     void onInstrumentClicked();
@@ -32,10 +39,13 @@ private slots:
     void updateHUD();
     void updateAutoIncome();
     void updateMarketEvent();
+    void updateDateDisplay();
+    void hideEventPopup();
     void onBankClicked();
     void onExchangeClicked();
     void onShopClicked();
     void onYezhangClicked();
+    void onAchievementClicked();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -50,14 +60,26 @@ private:
     QTimer* m_updateTimer;
     int m_clickCount;
     double m_autoIncomePerSec;
+    QDate m_currentDate;
+    int m_dayTickCounter;
+
+    AchievementManager* m_achievementManager = nullptr;
+
+    // 事件弹出通知
+    QFrame* m_eventPopup = nullptr;
+    QLabel* m_eventPopupLabel = nullptr;
+    QPropertyAnimation* m_eventAnim = nullptr;
+    QTimer* m_eventHideTimer = nullptr;
+    QString m_lastEventText;
 
     void updateInstrumentIcon();
     void createPavilionButtons();
     void updatePavilionPositions();
     void updateFishGlowPosition();
     void updateFishClickAreaPosition(QPushButton *btn);
+    void setupEventPopup();
+    void showEventPopup(const QString& text);
 
-private:
     QPushButton *pavilionBankBtn;
     QPushButton *pavilionExchangeBtn;
     QPushButton *pavilionShopBtn;
