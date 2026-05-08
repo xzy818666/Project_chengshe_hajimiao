@@ -1,0 +1,69 @@
+#ifndef MERITHALL_H
+#define MERITHALL_H
+
+#include <QMainWindow>
+#include <QPushButton>
+#include <QLabel>
+#include "wallet.h"
+#include "instrument.h"
+#include "asset.h"
+#include "marketevent.h"
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MeritHall; }
+QT_END_NAMESPACE
+
+class MeritHall : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MeritHall(QWidget *parent = nullptr);
+    ~MeritHall();
+
+    void setWallet(Wallet* wallet);
+    void setAssets(QList<Asset*> assets);
+    void setMarketEvent(MarketEvent* marketEvent);
+
+private slots:
+    void onInstrumentClicked();
+    void onInstrumentPressed();
+    void onInstrumentReleased();
+    void updateHUD();
+    void updateAutoIncome();
+    void updateMarketEvent();
+    void onBankClicked();
+    void onExchangeClicked();
+    void onShopClicked();
+    void onYezhangClicked();
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+private:
+    Ui::MeritHall *ui;
+    Wallet* m_wallet;
+    Instrument m_currentInstrument;
+    QList<Asset*> m_assets;
+    MarketEvent* m_marketEvent;
+    QTimer* m_updateTimer;
+    int m_clickCount;
+    double m_autoIncomePerSec;
+
+    void updateInstrumentIcon();
+    void createPavilionButtons();
+    void updatePavilionPositions();
+    void updateFishGlowPosition();
+    void updateFishClickAreaPosition(QPushButton *btn);
+
+private:
+    QPushButton *pavilionBankBtn;
+    QPushButton *pavilionExchangeBtn;
+    QPushButton *pavilionShopBtn;
+    QPushButton *pavilionYezhangBtn;
+    QLabel *m_fishGlowLayer;
+    QPushButton *m_fishClickArea;
+};
+
+#endif // MERITHALL_H

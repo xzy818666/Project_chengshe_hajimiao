@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BankDialog</class>
+ <widget class="QDialog" name="BankDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>善财司</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <widget class="QWidget" name="savingsTab">
+      <attribute name="title">
+       <string>活期与定期</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="savingsLayout">
+       <item>
+        <widget class="QLabel" name="savingsBalance">
+         <property name="text">
+          <string>活期余额: 0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="savingsControls">
+         <item>
+          <widget class="QDoubleSpinBox" name="savingsAmount">
+           <property name="minimum">
+            <double>0.01</double>
+           </property>
+           <property name="maximum">
+            <double>100000.00</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="depositBtn">
+           <property name="text">
+            <string>存入</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="withdrawBtn">
+           <property name="text">
+            <string>取出</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="fdLabel">
+         <property name="text">
+          <string>定期存款</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="fdControls">
+         <item>
+          <widget class="QDoubleSpinBox" name="fdAmount">
+           <property name="minimum">
+            <double>100.00</double>
+           </property>
+           <property name="maximum">
+            <double>100000.00</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buyFD7Btn">
+           <property name="text">
+            <string>7天 (6%)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buyFD30Btn">
+           <property name="text">
+            <string>30天 (8%)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buyFD90Btn">
+           <property name="text">
+            <string>90天 (12%)</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QListWidget" name="fdList"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="withdrawFDBtn">
+         <property name="text">
+          <string>提取选中</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="loanTab">
+      <attribute name="title">
+       <string>功德借贷</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="loanLayout">
+       <item>
+        <widget class="QLabel" name="debtBalance">
+         <property name="text">
+          <string>债务总额: 0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="creditScore">
+         <property name="text">
+          <string>信用分: 500</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="maxBorrow">
+         <property name="text">
+          <string>可借额度: 0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="borrowAmount">
+         <property name="minimum">
+          <double>10.00</double>
+         </property>
+         <property name="maximum">
+          <double>2000.00</double>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="loanButtons">
+         <item>
+          <widget class="QPushButton" name="borrowBtn">
+           <property name="text">
+            <string>借款</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="repayAmount">
+           <property name="minimum">
+            <double>10.00</double>
+           </property>
+           <property name="maximum">
+            <double>10000.00</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="repayBtn">
+           <property name="text">
+            <string>还款</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="yezhangTab">
+      <attribute name="title">
+       <string>业障状态</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="yezhangLayout">
+       <item>
+        <widget class="QLabel" name="yezhangValue">
+         <property name="text">
+          <string>业障值: 0</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="yezhangBar"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="efficiencyValue">
+         <property name="text">
+          <string>效率: 100%</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="confessAmount">
+         <property name="minimum">
+          <double>1.00</double>
+         </property>
+         <property name="maximum">
+          <double>100.00</double>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="confessBtn">
+         <property name="text">
+          <string>忏悔 (消耗功德)</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
