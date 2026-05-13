@@ -276,7 +276,7 @@ void MeritHall::updateAutoIncome()
 
     // 推进游戏日期：每 30 秒为一天
     m_dayTickCounter++;
-    if (m_dayTickCounter >= 30) {
+    if (m_dayTickCounter >= 1) {
         m_dayTickCounter = 0;
         m_currentDate = m_currentDate.addDays(1);
         updateDateDisplay();
@@ -438,9 +438,9 @@ void MeritHall::createPavilionButtons()
     pavilionShopBtn->setCursor(Qt::PointingHandCursor);
     connect(pavilionShopBtn, &QPushButton::clicked, this, &MeritHall::onShopClicked);
 
-    pavilionYezhangBtn = new QPushButton("忏悔楼", this);
-    pavilionYezhangBtn->setCursor(Qt::PointingHandCursor);
-    connect(pavilionYezhangBtn, &QPushButton::clicked, this, &MeritHall::onYezhangClicked);
+    pavilionAchievementBtn = new QPushButton("成就", this);
+    pavilionAchievementBtn->setCursor(Qt::PointingHandCursor);
+    connect(pavilionAchievementBtn, &QPushButton::clicked, this, &MeritHall::onAchievementClicked);
 
     // 初始化按钮位置和样式（响应式）
     updatePavilionPositions();
@@ -450,6 +450,7 @@ void MeritHall::createPavilionButtons()
     ui->exchangeBtn->hide();
     ui->shopBtn->hide();
     ui->yezhangBtn->hide();
+    ui->achievementBtn->hide();
 }
 
 void MeritHall::updatePavilionPositions()
@@ -480,13 +481,13 @@ void MeritHall::updatePavilionPositions()
     pavilionBankBtn->setStyleSheet(pavilionStyle);
     pavilionExchangeBtn->setStyleSheet(pavilionStyle);
     pavilionShopBtn->setStyleSheet(pavilionStyle);
-    pavilionYezhangBtn->setStyleSheet(pavilionStyle);
+    pavilionAchievementBtn->setStyleSheet(pavilionStyle);
     
     // 四个阁楼门的位置比例（可调整）
     pavilionBankBtn->setGeometry(w * 0.25 - btnWidth/2, h * 0.38 - btnHeight/2, btnWidth, btnHeight);
     pavilionExchangeBtn->setGeometry(w * 0.76 - btnWidth/2, h * 0.38 - btnHeight/2, btnWidth, btnHeight);
     pavilionShopBtn->setGeometry(w * 0.18 - btnWidth/2, h * 0.66 - btnHeight/2, btnWidth, btnHeight);
-    pavilionYezhangBtn->setGeometry(w * 0.81 - btnWidth/2, h * 0.66 - btnHeight/2, btnWidth, btnHeight);
+    pavilionAchievementBtn->setGeometry(w * 0.81 - btnWidth/2, h * 0.66 - btnHeight/2, btnWidth, btnHeight);
 }
 
 void MeritHall::resizeEvent(QResizeEvent *event)

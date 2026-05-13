@@ -83,7 +83,7 @@ private:
     QPushButton *pavilionBankBtn;
     QPushButton *pavilionExchangeBtn;
     QPushButton *pavilionShopBtn;
-    QPushButton *pavilionYezhangBtn;
+    QPushButton *pavilionAchievementBtn;
     QLabel *m_fishGlowLayer;
     QPushButton *m_fishClickArea;
 };

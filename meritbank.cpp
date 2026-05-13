@@ -1,6 +1,8 @@
 #include <QApplication>
 #include <QTimer>
 #include <QObject>
+#include <cstdlib>
+#include <ctime>
 #include "merithall.h"
 #include "wallet.h"
 #include "meritindex.h"
@@ -8,13 +10,17 @@
 #include "dharmafund.h"
 #include "samsarafutures.h"
 #include "marketevent.h"
+#include "achievementmanager.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    std::srand(std::time(nullptr));
+
     Wallet wallet;
     MarketEvent marketEvent;
+    AchievementManager achievementManager;
 
     MeritIndex meritIndex;
     KarmaBond karmaBond;
@@ -27,6 +33,7 @@ int main(int argc, char *argv[])
     window.setWallet(&wallet);
     window.setAssets(assets);
     window.setMarketEvent(&marketEvent);
+    window.setAchievementManager(&achievementManager);
     window.show();
 
     QTimer updateTimer;

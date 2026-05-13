@@ -316,17 +316,13 @@ void ExchangeDialog::updateChart()
     int window = qMin(history.size(), DAY_TICKS);
     int start = history.size() - window;
 
-    if (m_priceSeries->count() == window) {
-        // 只更新最后一个点，避免全量刷新导致闪烁
-        m_priceSeries->replace(window - 1, window - 1, history.last());
-    } else {
-        QVector<QPointF> points;
-        points.reserve(window);
-        for (int i = 0; i < window; ++i) {
-            points.append(QPointF(i, history[start + i]));
-        }
-        m_priceSeries->replace(points);
+    // 全量替换窗口内的点，确保滑动窗口正确左移
+    QVector<QPointF> points;
+    points.reserve(window);
+    for (int i = 0; i < window; ++i) {
+        points.append(QPointF(i, history[start + i]));
     }
+    m_priceSeries->replace(points);
 
     if (m_chart->axes(Qt::Horizontal).isEmpty()) {
         m_chart->createDefaultAxes();
@@ -334,6 +330,7 @@ void ExchangeDialog::updateChart()
         auto* axisY = qobject_cast<QValueAxis*>(m_chart->axes(Qt::Vertical).first());
         if (axisX) {
             axisX->setLabelFormat("%d");
+            axisX->setRange(0, DAY_TICKS - 1);
         }
         if (axisY) {
             axisY->setLabelFormat("%.2f");
@@ -342,7 +339,7 @@ void ExchangeDialog::updateChart()
         auto* axisX = qobject_cast<QValueAxis*>(m_chart->axes(Qt::Horizontal).first());
         auto* axisY = qobject_cast<QValueAxis*>(m_chart->axes(Qt::Vertical).first());
         if (axisX) {
-            axisX->setRange(0, qMax(1, window - 1));
+            axisX->setRange(0, DAY_TICKS - 1);
         }
         if (axisY) {
             double minPrice = *std::min_element(history.begin() + start, history.end());
