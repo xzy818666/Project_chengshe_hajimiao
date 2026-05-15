@@ -3,6 +3,7 @@
 #include <QObject>
 #include <cstdlib>
 #include <ctime>
+#include "startmenu.h"
 #include "merithall.h"
 #include "wallet.h"
 #include "meritindex.h"
@@ -18,36 +19,48 @@ int main(int argc, char *argv[])
 
     std::srand(std::time(nullptr));
 
-    Wallet wallet;
-    MarketEvent marketEvent;
-    AchievementManager achievementManager;
+    StartMenu startMenu;
+    startMenu.show();
 
-    MeritIndex meritIndex;
-    KarmaBond karmaBond;
-    DharmaFund dharmaFund;
-    SamsaraFutures samsaraFutures;
+    QObject::connect(&startMenu, &StartMenu::startGame, [&](GameDifficulty diff) {
+        startMenu.hide();
 
-    QList<Asset*> assets = {&meritIndex, &karmaBond, &dharmaFund, &samsaraFutures};
+        GameConfig config = configForDifficulty(diff);
 
-    MeritHall window;
-    window.setWallet(&wallet);
-    window.setAssets(assets);
-    window.setMarketEvent(&marketEvent);
-    window.setAchievementManager(&achievementManager);
-    window.show();
+        MeritHall *window = new MeritHall;
+        window->setAttribute(Qt::WA_DeleteOnClose);
 
-    QTimer updateTimer;
-    QObject::connect(&updateTimer, &QTimer::timeout, [&]() {
-        double dt = 0.1;
-        for (Asset* asset : assets) {
-            asset->update(dt, marketEvent.driftModifier(), marketEvent.volatilityModifier());
-        }
-        marketEvent.update(dt);
-        wallet.updateDebtInterest();
-        wallet.updateSavingsInterest();
-        wallet.applyInflation(dt);
+        Wallet *wallet = new Wallet(window, config.initialMerit, config.nextLifePool,
+                                    config.inflationRate, config.creditScore);
+        MarketEvent *marketEvent = new MarketEvent(window);
+        AchievementManager *achievementManager = new AchievementManager(window);
+
+        MeritIndex *meritIndex = new MeritIndex(window);
+        KarmaBond *karmaBond = new KarmaBond(window);
+        DharmaFund *dharmaFund = new DharmaFund(window);
+        SamsaraFutures *samsaraFutures = new SamsaraFutures(window);
+
+        QList<Asset*> assets = {meritIndex, karmaBond, dharmaFund, samsaraFutures};
+
+        window->setWallet(wallet);
+        window->setAssets(assets);
+        window->setMarketEvent(marketEvent);
+        window->setAchievementManager(achievementManager);
+        window->show();
+
+        QTimer *updateTimer = new QTimer(window);
+        QObject::connect(updateTimer, &QTimer::timeout, [wallet, marketEvent, assets]() {
+            double dt = 0.1;
+            for (Asset* asset : assets) {
+                asset->update(dt, marketEvent->driftModifier(), marketEvent->volatilityModifier());
+            }
+            marketEvent->update(dt);
+            wallet->updateDebtInterest();
+            wallet->updateSavingsInterest();
+            wallet->applyInflation(dt);
+        });
+        updateTimer->start(100);
     });
-    updateTimer.start(100);
 
     return app.exec();
 }

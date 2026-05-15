@@ -11,7 +11,23 @@ Wallet::Wallet(QObject *parent) : QObject(parent),
     m_debt(0),
     m_yezhang(0),
     m_creditScore(500),
-    m_dailyInflationRate(DEFAULT_DAILY_INFLATION)
+    m_dailyInflationRate(DEFAULT_DAILY_INFLATION),
+    m_nextLifeMeritPool(1000),
+    m_nextLifeLoss(0)
+{
+}
+
+Wallet::Wallet(QObject *parent, double initialMerit, double nextLifePool,
+               double inflationRate, double creditScore)
+    : QObject(parent),
+      m_merit(initialMerit),
+      m_savings(0),
+      m_debt(0),
+      m_yezhang(0),
+      m_creditScore(creditScore),
+      m_dailyInflationRate(inflationRate),
+      m_nextLifeMeritPool(nextLifePool),
+      m_nextLifeLoss(0)
 {
 }
 
@@ -280,4 +296,38 @@ void Wallet::updateSavingsInterest()
 {
     double interest = m_savings * SAVINGS_RATE / 86400.0;
     m_savings += interest;
+}
+
+double Wallet::nextLifeMeritPool() const
+{
+    return m_nextLifeMeritPool;
+}
+
+double Wallet::nextLifeLoss() const
+{
+    return m_nextLifeLoss;
+}
+
+void Wallet::applySamsaraLoss(double lossAmount)
+{
+    if (lossAmount <= 0) return;
+    double fromPool = qMin(lossAmount, m_nextLifeMeritPool);
+    m_nextLifeMeritPool -= fromPool;
+    m_nextLifeLoss += fromPool;
+
+    double remaining = lossAmount - fromPool;
+    if (remaining > 0) {
+        m_debt += remaining;
+        emit debtChanged(m_debt);
+    }
+}
+
+double Wallet::getAssetCostBasis(const QString& assetId) const
+{
+    return m_assetCostBasis.value(assetId, 0);
+}
+
+void Wallet::clearCostBasis(const QString& assetId)
+{
+    m_assetCostBasis.remove(assetId);
 }

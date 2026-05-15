@@ -33,7 +33,9 @@ SOURCES += \
     achievementdialog.cpp \
     portfolioadvisor.cpp \
     arbitragescanner.cpp \
-    autoinvestor.cpp
+    autoinvestor.cpp \
+    startmenu.cpp \
+    savemanager.cpp
 
 HEADERS += \
     wallet.h \
@@ -52,7 +54,9 @@ HEADERS += \
     achievementdialog.h \
     portfolioadvisor.h \
     arbitragescanner.h \
-    autoinvestor.h
+    autoinvestor.h \
+    startmenu.h \
+    savemanager.h
 
 FORMS += \
     merithall.ui \

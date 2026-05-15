@@ -46,6 +46,9 @@ private slots:
     void onShopClicked();
     void onYezhangClicked();
     void onAchievementClicked();
+    void onEndSamsaraClicked();
+    void checkSamsaraLiquidation();
+    void showLiquidationAlert(double loss);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -74,6 +77,8 @@ private:
 
     void updateInstrumentIcon();
     void createPavilionButtons();
+    void createEndSamsaraButton();
+    void showGameOverDialog();
     void updatePavilionPositions();
     void updateFishGlowPosition();
     void updateFishClickAreaPosition(QPushButton *btn);

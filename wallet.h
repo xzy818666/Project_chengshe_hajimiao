@@ -10,6 +10,8 @@ class Wallet : public QObject
     Q_OBJECT
 public:
     explicit Wallet(QObject *parent = nullptr);
+    explicit Wallet(QObject *parent, double initialMerit, double nextLifePool,
+                    double inflationRate, double creditScore);
 
     double merit() const;
     void earn(double amount);
@@ -27,6 +29,11 @@ public:
 
     double efficiency() const;
 
+    // 下世功德
+    double nextLifeMeritPool() const;
+    double nextLifeLoss() const;
+    void applySamsaraLoss(double lossAmount);
+
     // 通货膨胀
     double dailyInflationRate() const;
     void setDailyInflationRate(double rate);
@@ -43,6 +50,8 @@ public:
     // 成本基础与交易记录（成就系统用）
     void recordAssetBuy(const QString& assetId, double shares, double cost);
     void recordAssetSell(const QString& assetId, double shares, double revenue);
+    double getAssetCostBasis(const QString& assetId) const;
+    void clearCostBasis(const QString& assetId);
 
     // 定期存款
     struct FixedDeposit {
@@ -78,6 +87,8 @@ private:
     double m_yezhang;
     double m_creditScore;
     double m_dailyInflationRate;
+    double m_nextLifeMeritPool;
+    double m_nextLifeLoss;
 
     QMap<QString, double> m_assets;
     QMap<QString, double> m_assetCostBasis;
