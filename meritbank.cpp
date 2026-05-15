@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
         marketEvent.update(dt);
         wallet.updateDebtInterest();
         wallet.updateSavingsInterest();
+        wallet.applyInflation(dt);
     });
     updateTimer.start(100);
 

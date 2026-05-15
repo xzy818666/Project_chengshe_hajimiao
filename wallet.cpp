@@ -119,8 +119,8 @@ void Wallet::applyInflation(double dt)
 {
     if (m_dailyInflationRate <= 0 || dt <= 0) return;
 
-    // 一天按30秒计算（与AGENTS.md一致），dt单位是秒
-    const double DAY_SECONDS = 30.0;
+    // 游戏内一天压缩为1秒，dt单位是秒
+    const double DAY_SECONDS = 1.0;
     double tickRate = m_dailyInflationRate * (dt / DAY_SECONDS);
     double factor = 1.0 - tickRate;
     factor = qMax(0.0, factor);
