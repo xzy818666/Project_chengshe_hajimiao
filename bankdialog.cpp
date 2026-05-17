@@ -1,5 +1,7 @@
 #include "bankdialog.h"
 #include "ui_bankdialog.h"
+#include <QMessageBox>
+#include <QTableWidgetItem>
 
 const double BankDialog::FIXED_RATE_7DAY = 0.06;
 const double BankDialog::FIXED_RATE_30DAY = 0.08;
@@ -22,6 +24,8 @@ BankDialog::BankDialog(QWidget *parent)
     connect(ui->borrowBtn, &QPushButton::clicked, this, &BankDialog::onBorrow);
     connect(ui->repayBtn, &QPushButton::clicked, this, &BankDialog::onRepay);
     connect(ui->confessBtn, &QPushButton::clicked, this, &BankDialog::onConfess);
+    connect(ui->addMarginBtn, &QPushButton::clicked, this, &BankDialog::onAddMargin);
+    connect(ui->closeAllLeverageBtn, &QPushButton::clicked, this, &BankDialog::onCloseAllLeverage);
 }
 
 BankDialog::~BankDialog()
@@ -35,8 +39,15 @@ void BankDialog::setWallet(Wallet* wallet)
     connect(m_wallet, &Wallet::meritChanged, this, &BankDialog::updateInfo);
     connect(m_wallet, &Wallet::debtChanged, this, &BankDialog::updateInfo);
     connect(m_wallet, &Wallet::yezhangChanged, this, &BankDialog::updateInfo);
+    connect(m_wallet, &Wallet::leverageChanged, this, &BankDialog::updateLeverageTable);
     updateInfo();
     updateFixedDeposits();
+    updateLeverageTable();
+}
+
+void BankDialog::setAssets(QList<Asset*> assets)
+{
+    m_assets = assets;
 }
 
 void BankDialog::onDepositSavings()
@@ -102,21 +113,115 @@ void BankDialog::onConfess()
     updateInfo();
 }
 
+void BankDialog::onAddMargin()
+{
+    if (!m_wallet) return;
+    int row = ui->leverageTable->currentRow();
+    if (row < 0) {
+        QMessageBox::information(this, "提示", "请先选中一条杠杆持仓");
+        return;
+    }
+    QString assetId = ui->leverageTable->item(row, 0)->data(Qt::UserRole).toString();
+    double amount = ui->savingsAmount->value(); // 复用活期金额输入框
+    if (amount <= 0) {
+        QMessageBox::information(this, "提示", "请输入有效的追加金额");
+        return;
+    }
+    if (m_wallet->addMarginToPosition(assetId, amount)) {
+        updateLeverageTable();
+        updateInfo();
+        QMessageBox::information(this, "追加成功", "保证金已追加");
+    } else {
+        QMessageBox::information(this, "追加失败", "功德不足或无该持仓");
+    }
+}
+
+void BankDialog::onCloseAllLeverage()
+{
+    if (!m_wallet) return;
+    auto positions = m_wallet->leveragePositions();
+    if (positions.isEmpty()) {
+        QMessageBox::information(this, "提示", "当前没有杠杆持仓");
+        return;
+    }
+
+    int closed = 0;
+    for (const auto& pos : positions) {
+        Asset* asset = nullptr;
+        for (Asset* a : m_assets) {
+            if (a->id() == pos.assetId) {
+                asset = a;
+                break;
+            }
+        }
+        if (asset) {
+            m_wallet->closeLeveragePosition(pos.assetId, pos.shares, asset->price());
+            closed++;
+        }
+    }
+    updateLeverageTable();
+    updateInfo();
+    QMessageBox::information(this, "平仓完成", QString("已平仓 %1 条杠杆持仓").arg(closed));
+}
+
 void BankDialog::updateInfo()
 {
     if (!m_wallet) return;
 
-    ui->savingsBalance->setText(QString("%1").arg(m_wallet->savingsBalance(), 0, 'f', 2));
-    ui->debtBalance->setText(QString("%1").arg(m_wallet->totalDebt(), 0, 'f', 2));
-    ui->creditScore->setText(QString("%1").arg((int)m_wallet->creditScore()));
-    ui->maxBorrow->setText(QString("%1").arg(m_wallet->maxBorrow(), 0, 'f', 2));
-    ui->yezhangValue->setText(QString("%1").arg(m_wallet->yezhang(), 0, 'f', 0));
+    ui->savingsBalance->setText(QString("活期余额: %1 功德").arg(m_wallet->savingsBalance(), 0, 'f', 2));
+
+    double debt = m_wallet->totalDebt();
+    ui->debtBalance->setText(QString("债务总额: %1 功德").arg(debt, 0, 'f', 2));
+    if (debt > m_wallet->maxBorrow()) {
+        ui->debtBalance->setStyleSheet("font-size: 14px; color: #C62828; font-weight: bold;");
+    } else if (debt > m_wallet->maxBorrow() * 0.5) {
+        ui->debtBalance->setStyleSheet("font-size: 14px; color: #E65100; font-weight: bold;");
+    } else {
+        ui->debtBalance->setStyleSheet("font-size: 14px; color: #2E7D32; font-weight: bold;");
+    }
+
+    int score = (int)m_wallet->creditScore();
+    ui->creditScore->setText(QString("信用分: %1 / 1000").arg(score));
+    if (score < 300) {
+        ui->creditScore->setStyleSheet("font-size: 14px; color: #C62828; font-weight: bold;");
+    } else if (score < 500) {
+        ui->creditScore->setStyleSheet("font-size: 14px; color: #E65100; font-weight: bold;");
+    } else {
+        ui->creditScore->setStyleSheet("font-size: 14px; color: #2E7D32; font-weight: bold;");
+    }
+
+    ui->maxBorrow->setText(QString("可借额度: %1 功德").arg(m_wallet->maxBorrow(), 0, 'f', 2));
+
+    double yz = m_wallet->yezhang();
+    ui->yezhangValue->setText(QString("业障值: %1 / 2000").arg(yz, 0, 'f', 0));
+    if (yz > 1000) {
+        ui->yezhangValue->setStyleSheet("font-size: 14px; color: #C62828; font-weight: bold;");
+    } else if (yz > 500) {
+        ui->yezhangValue->setStyleSheet("font-size: 14px; color: #E65100; font-weight: bold;");
+    } else {
+        ui->yezhangValue->setStyleSheet("font-size: 14px; color: #2E7D32; font-weight: bold;");
+    }
 
     double efficiency = m_wallet->efficiency() * 100;
-    ui->efficiencyValue->setText(QString("%1%").arg(efficiency, 0, 'f', 1));
+    ui->efficiencyValue->setText(QString("效率系数: %1%").arg(efficiency, 0, 'f', 1));
+    if (efficiency < 60) {
+        ui->efficiencyValue->setStyleSheet("font-size: 14px; color: #C62828; font-weight: bold;");
+    } else if (efficiency < 80) {
+        ui->efficiencyValue->setStyleSheet("font-size: 14px; color: #E65100; font-weight: bold;");
+    } else {
+        ui->efficiencyValue->setStyleSheet("font-size: 14px; color: #2E7D32; font-weight: bold;");
+    }
 
     ui->yezhangBar->setMaximum(2000);
-    ui->yezhangBar->setValue((int)m_wallet->yezhang());
+    ui->yezhangBar->setValue((int)yz);
+    // 进度条颜色随业障值变化
+    if (yz > 1000) {
+        ui->yezhangBar->setStyleSheet("QProgressBar::chunk { background-color: #C62828; }");
+    } else if (yz > 500) {
+        ui->yezhangBar->setStyleSheet("QProgressBar::chunk { background-color: #E65100; }");
+    } else {
+        ui->yezhangBar->setStyleSheet("QProgressBar::chunk { background-color: #2E7D32; }");
+    }
 }
 
 void BankDialog::updateFixedDeposits()
@@ -130,5 +235,60 @@ void BankDialog::updateFixedDeposits()
         QListWidgetItem* item = new QListWidgetItem(itemText);
         item->setData(Qt::UserRole, fd.id);
         ui->fdList->addItem(item);
+    }
+}
+
+void BankDialog::updateLeverageTable()
+{
+    if (!m_wallet) return;
+
+    double levDebt = m_wallet->leverageDebt();
+    ui->leverageDebtLabel->setText(QString("杠杆负债: %1 功德").arg(levDebt, 0, 'f', 2));
+    if (levDebt > 0) {
+        ui->leverageDebtLabel->setStyleSheet("font-size: 14px; color: #C62828; font-weight: bold;");
+    } else {
+        ui->leverageDebtLabel->setStyleSheet("font-size: 14px; color: #2E7D32; font-weight: bold;");
+    }
+
+    double borrowed = m_wallet->totalLeverageBorrowed();
+    ui->totalBorrowedLabel->setText(QString("当前借款: %1 功德").arg(borrowed, 0, 'f', 2));
+    if (borrowed > 0) {
+        ui->totalBorrowedLabel->setStyleSheet("font-size: 14px; color: #E65100; font-weight: bold;");
+    } else {
+        ui->totalBorrowedLabel->setStyleSheet("font-size: 14px; color: #2E7D32; font-weight: bold;");
+    }
+
+    ui->leverageTable->setRowCount(0);
+    int row = 0;
+    for (const auto& pos : m_wallet->leveragePositions()) {
+        ui->leverageTable->insertRow(row);
+
+        // 查找资产名称和价格
+        QString assetName = pos.assetId;
+        double price = 0;
+        for (Asset* a : m_assets) {
+            if (a->id() == pos.assetId) {
+                assetName = a->name();
+                price = a->price();
+                break;
+            }
+        }
+
+        double marginRate = m_wallet->marginRate(pos.assetId, price);
+        QString rateText = QString("%1%").arg(marginRate * 100, 0, 'f', 1);
+        if (marginRate < 0.20) {
+            rateText += " (危险)";
+        } else if (marginRate < 0.35) {
+            rateText += " (预警)";
+        }
+
+        QTableWidgetItem* nameItem = new QTableWidgetItem(assetName);
+        nameItem->setData(Qt::UserRole, pos.assetId);
+        ui->leverageTable->setItem(row, 0, nameItem);
+        ui->leverageTable->setItem(row, 1, new QTableWidgetItem(QString::number(pos.shares, 'f', 4)));
+        ui->leverageTable->setItem(row, 2, new QTableWidgetItem(QString::number(pos.principal, 'f', 2)));
+        ui->leverageTable->setItem(row, 3, new QTableWidgetItem(QString::number(pos.borrowed, 'f', 2)));
+        ui->leverageTable->setItem(row, 4, new QTableWidgetItem(rateText));
+        row++;
     }
 }

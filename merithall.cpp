@@ -203,6 +203,12 @@ void MeritHall::setGameTimer(QTimer* timer)
     m_gameTimer = timer;
 }
 
+void MeritHall::setLeverageParams(double maxLeverage, double maintenanceMarginRate)
+{
+    m_maxLeverage = maxLeverage;
+    m_maintenanceMarginRate = maintenanceMarginRate;
+}
+
 void MeritHall::onInstrumentPressed()
 {
     // 保留 HEAD 的法器点击发光动画效果
@@ -294,6 +300,7 @@ void MeritHall::updateAutoIncome()
     if (!m_wallet) return;
 
     checkSamsaraLiquidation();
+    checkLeverageMargin();
 
     // 推进游戏日期：每 30 秒为一天
     m_dayTickCounter++;
@@ -411,6 +418,7 @@ void MeritHall::onBankClicked()
 {
     BankDialog dialog(this);
     dialog.setWallet(m_wallet);
+    dialog.setAssets(m_assets);
     dialog.exec();
     updateHUD();
 }
@@ -421,6 +429,7 @@ void MeritHall::onExchangeClicked()
     dialog.setWallet(m_wallet);
     dialog.setAssets(m_assets);
     dialog.setMarketEvent(m_marketEvent);
+    dialog.setMaxLeverage(m_maxLeverage);
     dialog.exec();
     updateHUD();
 }
@@ -746,4 +755,36 @@ void MeritHall::showLiquidationAlert(double loss)
                 "本次亏损: %1 功德\n"
                 "优先从下世功德扣除，不足部分计入债务。")
             .arg(loss, 0, 'f', 2));
+}
+
+void MeritHall::checkLeverageMargin()
+{
+    if (!m_wallet) return;
+
+    for (const auto& pos : m_wallet->leveragePositions()) {
+        Asset* asset = nullptr;
+        for (Asset* a : m_assets) {
+            if (a->id() == pos.assetId) {
+                asset = a;
+                break;
+            }
+        }
+        if (!asset) continue;
+
+        double price = asset->price();
+        double marginRate = m_wallet->marginRate(pos.assetId, price);
+
+        if (marginRate < m_maintenanceMarginRate) {
+            double marketValue = pos.shares * price;
+            double equity = marketValue - pos.borrowed;
+            double requiredEquity = marketValue * m_maintenanceMarginRate;
+            double shortfall = requiredEquity - equity; // 亏多少才到维持线
+            if (shortfall < 0) shortfall = 0;
+            // 每 tick 按缺口 × 0.5% 产生业障
+            double yezhangAdd = shortfall * 0.005;
+            if (yezhangAdd > 0.001) {
+                m_wallet->addYezhang(yezhangAdd);
+            }
+        }
+    }
 }

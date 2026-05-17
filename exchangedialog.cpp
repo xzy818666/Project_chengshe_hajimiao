@@ -38,6 +38,9 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     ui->tradeAmount->setSingleStep(0.05);
     ui->tradeAmount->setLocale(QLocale::C);
 
+    // 初始化杠杆选择（默认只有1×，等setMaxLeverage后更新）
+    ui->leverageCombo->addItem("1×", 1.0);
+
     // 添加交易提示标签
     QLabel* hintLabel = new QLabel("💡 买入时输入功德金额，卖出时输入持仓份额", this);
     hintLabel->setAlignment(Qt::AlignCenter);
@@ -138,12 +141,32 @@ void ExchangeDialog::setMarketEvent(MarketEvent* marketEvent)
     m_marketEvent = marketEvent;
 }
 
+void ExchangeDialog::setMaxLeverage(double maxLeverage)
+{
+    m_maxLeverage = maxLeverage;
+    updateLeverageCombo();
+}
+
+void ExchangeDialog::updateLeverageCombo()
+{
+    ui->leverageCombo->clear();
+    ui->leverageCombo->addItem("1×", 1.0);
+    if (m_maxLeverage >= 1.5) ui->leverageCombo->addItem("1.5×", 1.5);
+    if (m_maxLeverage >= 2.0) ui->leverageCombo->addItem("2×", 2.0);
+    if (m_maxLeverage >= 3.0) ui->leverageCombo->addItem("3×", 3.0);
+}
+
 void ExchangeDialog::onAssetSelected(int index)
 {
     if (index < 0 || index >= m_assets.size()) return;
     m_selectedAsset = m_assets[index];
     updateChart();
     updatePortfolio();
+
+    // 轮回孽缘不支持本杠杆系统，隐藏杠杆选择
+    bool isSamsara = (m_selectedAsset->id() == "samsara_futures");
+    ui->leverageLabel->setVisible(!isSamsara);
+    ui->leverageCombo->setVisible(!isSamsara);
 }
 
 void ExchangeDialog::onBuy()
@@ -155,17 +178,54 @@ void ExchangeDialog::onBuy()
         QMessageBox::information(this, "买入失败", "请输入有效的买入金额");
         return;
     }
-    if (m_wallet->merit() >= amount) {
-        double price = m_selectedAsset->price();
-        double shares = amount / price;
-        m_wallet->spend(amount);
-        m_wallet->addAsset(m_selectedAsset->id(), shares);
+
+    double leverage = ui->leverageCombo->currentData().toDouble();
+    if (leverage <= 0) leverage = 1.0;
+
+    // 轮回孽缘不支持杠杆系统
+    if (m_selectedAsset->id() == "samsara_futures") {
+        leverage = 1.0;
+    }
+
+    double price = m_selectedAsset->price();
+    double shares = amount / price;
+
+    if (leverage > 1.0 && m_selectedAsset->id() != "samsara_futures") {
+        // 杠杆买入
+        double principal = amount / leverage;
+        double borrowed = amount - principal;
+
+        if (m_wallet->merit() < principal) {
+            QMessageBox::information(this, "买入失败", "功德不足以支付保证金");
+            return;
+        }
+        if (borrowed > m_wallet->maxBorrow() * 0.5) {
+            QMessageBox::information(this, "买入失败",
+                QString("杠杆借款 %1 超过可用信用额度的50%上限（%2）")
+                    .arg(borrowed, 0, 'f', 2).arg(m_wallet->maxBorrow() * 0.5, 0, 'f', 2));
+            return;
+        }
+
+        m_wallet->spend(principal);
+        m_wallet->openLeveragePosition(m_selectedAsset->id(), shares, principal, borrowed, leverage);
         m_wallet->recordAssetBuy(m_selectedAsset->id(), shares, amount);
         updatePortfolio();
-        QMessageBox::information(this, "买入成功",
-            QString("以 %1 功德买入 %2 %3 份").arg(amount, 0, 'f', 2).arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4));
+        QMessageBox::information(this, "杠杆买入成功",
+            QString("以 %1× 杠杆买入 %2 %3 份\n本金: %4 功德 | 借款: %5 功德")
+                .arg(leverage, 0, 'f', 1).arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4)
+                .arg(principal, 0, 'f', 2).arg(borrowed, 0, 'f', 2));
     } else {
-        QMessageBox::information(this, "买入失败", "功德不足");
+        // 普通买入
+        if (m_wallet->merit() >= amount) {
+            m_wallet->spend(amount);
+            m_wallet->addAsset(m_selectedAsset->id(), shares);
+            m_wallet->recordAssetBuy(m_selectedAsset->id(), shares, amount);
+            updatePortfolio();
+            QMessageBox::information(this, "买入成功",
+                QString("以 %1 功德买入 %2 %3 份").arg(amount, 0, 'f', 2).arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4));
+        } else {
+            QMessageBox::information(this, "买入失败", "功德不足");
+        }
     }
 }
 
@@ -185,32 +245,54 @@ void ExchangeDialog::onSell()
         shares = available;
     }
 
-    if (available >= shares) {
-        double price = m_selectedAsset->price();
-        double amount = shares * price;
+    if (available < shares) {
+        QMessageBox::information(this, "卖出失败",
+            QString("持仓不足，当前持有 %1 份").arg(available, 0, 'f', 4));
+        return;
+    }
+
+    double price = m_selectedAsset->price();
+
+    // 先处理杠杆持仓（如果有）
+    double leverageShares = 0;
+    for (const auto& pos : m_wallet->leveragePositions()) {
+        if (pos.assetId == m_selectedAsset->id()) {
+            leverageShares = pos.shares;
+            break;
+        }
+    }
+
+    double sharesToSell = shares;
+    if (leverageShares > 0 && m_selectedAsset->id() != "samsara_futures") {
+        double levSell = qMin(sharesToSell, leverageShares);
+        m_wallet->closeLeveragePosition(m_selectedAsset->id(), levSell, price);
+        sharesToSell -= levSell;
+    }
+
+    // 剩余部分按普通持仓卖出
+    if (sharesToSell > 0.0001) {
+        double amount = sharesToSell * price;
 
         // 轮回孽缘：亏损优先扣减下世功德
         if (m_selectedAsset->id() == "samsara_futures") {
             double costBasis = m_wallet->getAssetCostBasis(m_selectedAsset->id());
             if (available > 0 && costBasis > 0) {
                 double avgCost = costBasis / available;
-                double myCost = avgCost * shares;
+                double myCost = avgCost * sharesToSell;
                 if (amount < myCost) {
                     m_wallet->applySamsaraLoss(myCost - amount);
                 }
             }
         }
 
-        m_wallet->removeAsset(m_selectedAsset->id(), shares);
-        m_wallet->recordAssetSell(m_selectedAsset->id(), shares, amount);
+        m_wallet->removeAsset(m_selectedAsset->id(), sharesToSell);
+        m_wallet->recordAssetSell(m_selectedAsset->id(), sharesToSell, amount);
         m_wallet->earn(amount);
-        updatePortfolio();
-        QMessageBox::information(this, "卖出成功",
-            QString("卖出 %1 %2 份，获得 %3 功德").arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4).arg(amount, 0, 'f', 2));
-    } else {
-        QMessageBox::information(this, "卖出失败",
-            QString("持仓不足，当前持有 %1 份").arg(available, 0, 'f', 4));
     }
+
+    updatePortfolio();
+    QMessageBox::information(this, "卖出成功",
+        QString("卖出 %1 %2 份，当前价格 %3").arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4).arg(price, 0, 'f', 2));
 }
 
 void ExchangeDialog::updatePrices()

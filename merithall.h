@@ -32,6 +32,7 @@ public:
     void setMarketEvent(MarketEvent* marketEvent);
     void setAchievementManager(AchievementManager* manager);
     void setGameTimer(QTimer* timer);
+    void setLeverageParams(double maxLeverage, double maintenanceMarginRate);
 
 private slots:
     void onInstrumentClicked();
@@ -49,6 +50,7 @@ private slots:
     void onAchievementClicked();
     void onEndSamsaraClicked();
     void checkSamsaraLiquidation();
+    void checkLeverageMargin();
     void showLiquidationAlert(double loss);
 
 protected:
@@ -67,6 +69,8 @@ private:
     double m_autoIncomePerSec;
     QDate m_currentDate;
     int m_dayTickCounter;
+    double m_maxLeverage = 1.0;
+    double m_maintenanceMarginRate = 0.20;
 
     AchievementManager* m_achievementManager = nullptr;
 

@@ -13,7 +13,8 @@ Wallet::Wallet(QObject *parent) : QObject(parent),
     m_creditScore(500),
     m_dailyInflationRate(DEFAULT_DAILY_INFLATION),
     m_nextLifeMeritPool(1000),
-    m_nextLifeLoss(0)
+    m_nextLifeLoss(0),
+    m_leverageDebt(0)
 {
 }
 
@@ -27,7 +28,8 @@ Wallet::Wallet(QObject *parent, double initialMerit, double nextLifePool,
       m_creditScore(creditScore),
       m_dailyInflationRate(inflationRate),
       m_nextLifeMeritPool(nextLifePool),
-      m_nextLifeLoss(0)
+      m_nextLifeLoss(0),
+      m_leverageDebt(0)
 {
 }
 
@@ -320,6 +322,143 @@ void Wallet::applySamsaraLoss(double lossAmount)
         m_debt += remaining;
         emit debtChanged(m_debt);
     }
+}
+
+void Wallet::openLeveragePosition(const QString& assetId, double shares, double principal, double borrowed, double leverage)
+{
+    LeveragePosition& pos = m_leveragePositions[assetId];
+    pos.assetId = assetId;
+    // 按加权平均合并同一资产的杠杆持仓
+    double totalShares = pos.shares + shares;
+    if (totalShares > 0) {
+        pos.principal = (pos.principal * pos.shares + principal * shares) / totalShares;
+        pos.borrowed = (pos.borrowed * pos.shares + borrowed * shares) / totalShares;
+        pos.leverage = (pos.leverage * pos.shares + leverage * shares) / totalShares;
+    } else {
+        pos.principal = principal;
+        pos.borrowed = borrowed;
+        pos.leverage = leverage;
+    }
+    pos.shares = totalShares;
+    m_assets[assetId] += shares;
+    emit assetsChanged();
+    emit leverageChanged();
+}
+
+bool Wallet::closeLeveragePosition(const QString& assetId, double shares, double price)
+{
+    if (!m_leveragePositions.contains(assetId)) return false;
+    LeveragePosition& pos = m_leveragePositions[assetId];
+    if (pos.shares <= 0 || shares <= 0) return false;
+
+    double ratio = qMin(1.0, shares / pos.shares);
+    double sharesToClose = pos.shares * ratio;
+    double revenue = sharesToClose * price;
+    double repayBorrowed = pos.borrowed * ratio;
+    double costBasis = pos.principal * ratio;
+
+    pos.shares -= sharesToClose;
+    pos.borrowed -= repayBorrowed;
+    pos.principal -= costBasis;
+
+    if (pos.shares <= 0.0001) {
+        pos.shares = 0;
+        pos.principal = 0;
+        pos.borrowed = 0;
+        m_leveragePositions.remove(assetId);
+    }
+
+    // 先还借款，剩余归用户；不足部分记为杠杆负债
+    if (revenue >= repayBorrowed) {
+        m_merit += (revenue - repayBorrowed);
+    } else {
+        double loss = repayBorrowed - revenue;
+        m_leverageDebt += loss;
+        // 亏损产生业障：亏损额的10%
+        addYezhang(loss * 0.1);
+    }
+
+    // 扣除普通持仓中的份额
+    if (m_assets.value(assetId, 0) >= sharesToClose) {
+        m_assets[assetId] -= sharesToClose;
+        if (m_assets[assetId] <= 0) {
+            m_assets.remove(assetId);
+        }
+    }
+
+    emit meritChanged(m_merit);
+    emit assetsChanged();
+    emit leverageChanged();
+    return true;
+}
+
+bool Wallet::addMarginToPosition(const QString& assetId, double amount)
+{
+    if (!m_leveragePositions.contains(assetId) || m_merit < amount) return false;
+    LeveragePosition& pos = m_leveragePositions[assetId];
+    if (pos.shares <= 0) return false;
+
+    m_merit -= amount;
+    pos.principal += amount;
+    pos.borrowed = qMax(0.0, pos.borrowed - amount);
+    // 重新计算杠杆倍数
+    if (pos.principal > 0) {
+        pos.leverage = (pos.principal + pos.borrowed) / pos.principal;
+    }
+    emit meritChanged(m_merit);
+    emit leverageChanged();
+    return true;
+}
+
+const QMap<QString, Wallet::LeveragePosition>& Wallet::leveragePositions() const
+{
+    return m_leveragePositions;
+}
+
+double Wallet::leverageDebt() const
+{
+    return m_leverageDebt;
+}
+
+double Wallet::totalLeverageBorrowed() const
+{
+    double total = 0;
+    for (const auto& pos : m_leveragePositions) {
+        total += pos.borrowed;
+    }
+    return total;
+}
+
+double Wallet::marginRate(const QString& assetId, double currentPrice) const
+{
+    if (!m_leveragePositions.contains(assetId)) return 1.0;
+    const LeveragePosition& pos = m_leveragePositions[assetId];
+    double marketValue = pos.shares * currentPrice;
+    if (marketValue <= 0) return 0.0;
+    double equity = marketValue - pos.borrowed;
+    return equity / marketValue;
+}
+
+void Wallet::addLeverageDebt(double amount)
+{
+    if (amount > 0) {
+        m_leverageDebt += amount;
+        emit leverageChanged();
+    }
+}
+
+bool Wallet::repayLeverageDebt(double amount)
+{
+    if (amount <= 0) return false;
+    double actual = qMin(amount, qMin(m_merit, m_leverageDebt));
+    if (actual > 0) {
+        m_merit -= actual;
+        m_leverageDebt -= actual;
+        emit meritChanged(m_merit);
+        emit leverageChanged();
+        return true;
+    }
+    return false;
 }
 
 double Wallet::getAssetCostBasis(const QString& assetId) const
