@@ -35,7 +35,8 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     connect(ui->portfolioBtn, &QPushButton::clicked, this, &ExchangeDialog::showPortfolioView);
 
     ui->tradeAmount->setDecimals(4);
-    ui->tradeAmount->setSingleStep(0.0001);
+    ui->tradeAmount->setSingleStep(0.05);
+    ui->tradeAmount->setLocale(QLocale::C);
 
     // 添加交易提示标签
     QLabel* hintLabel = new QLabel("💡 买入时输入功德金额，卖出时输入持仓份额", this);
@@ -187,6 +188,19 @@ void ExchangeDialog::onSell()
     if (available >= shares) {
         double price = m_selectedAsset->price();
         double amount = shares * price;
+
+        // 轮回孽缘：亏损优先扣减下世功德
+        if (m_selectedAsset->id() == "samsara_futures") {
+            double costBasis = m_wallet->getAssetCostBasis(m_selectedAsset->id());
+            if (available > 0 && costBasis > 0) {
+                double avgCost = costBasis / available;
+                double myCost = avgCost * shares;
+                if (amount < myCost) {
+                    m_wallet->applySamsaraLoss(myCost - amount);
+                }
+            }
+        }
+
         m_wallet->removeAsset(m_selectedAsset->id(), shares);
         m_wallet->recordAssetSell(m_selectedAsset->id(), shares, amount);
         m_wallet->earn(amount);

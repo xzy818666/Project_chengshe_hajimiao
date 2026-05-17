@@ -158,6 +158,13 @@ void MeritHall::hideEventPopup()
 {
     if (!m_eventPopup) return;
 
+    m_eventHideTimer->stop();
+
+    // 如果已经在隐藏状态，无需重复动画
+    if (m_eventPopup->geometry().y() <= -60) {
+        return;
+    }
+
     QRect startRect(20, 10, width() - 40, 50);
     QRect endRect(20, -60, width() - 40, 50);
 
@@ -189,6 +196,11 @@ void MeritHall::setMarketEvent(MarketEvent* marketEvent)
 void MeritHall::setAchievementManager(AchievementManager* manager)
 {
     m_achievementManager = manager;
+}
+
+void MeritHall::setGameTimer(QTimer* timer)
+{
+    m_gameTimer = timer;
 }
 
 void MeritHall::onInstrumentPressed()
@@ -596,6 +608,12 @@ void MeritHall::createEndSamsaraButton()
 
 void MeritHall::onEndSamsaraClicked()
 {
+    if (m_updateTimer) {
+        m_updateTimer->stop();
+    }
+    if (m_gameTimer) {
+        m_gameTimer->stop();
+    }
     showGameOverDialog();
 }
 

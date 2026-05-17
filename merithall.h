@@ -31,6 +31,7 @@ public:
     void setAssets(QList<Asset*> assets);
     void setMarketEvent(MarketEvent* marketEvent);
     void setAchievementManager(AchievementManager* manager);
+    void setGameTimer(QTimer* timer);
 
 private slots:
     void onInstrumentClicked();
@@ -61,6 +62,7 @@ private:
     QList<Asset*> m_assets;
     MarketEvent* m_marketEvent;
     QTimer* m_updateTimer;
+    QTimer* m_gameTimer = nullptr;
     int m_clickCount;
     double m_autoIncomePerSec;
     QDate m_currentDate;

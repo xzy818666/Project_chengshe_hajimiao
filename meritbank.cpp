@@ -12,6 +12,7 @@
 #include "samsarafutures.h"
 #include "marketevent.h"
 #include "achievementmanager.h"
+#include "savemanager.h"
 
 int main(int argc, char *argv[])
 {
@@ -30,7 +31,10 @@ int main(int argc, char *argv[])
         MeritHall *window = new MeritHall;
         window->setAttribute(Qt::WA_DeleteOnClose);
 
-        Wallet *wallet = new Wallet(window, config.initialMerit, config.nextLifePool,
+        double lastNextLifeLoss = SaveManager::loadNextLifeLoss();
+        double nextLifePool = qMax(0.0, config.nextLifePool - lastNextLifeLoss);
+
+        Wallet *wallet = new Wallet(window, config.initialMerit, nextLifePool,
                                     config.inflationRate, config.creditScore);
         MarketEvent *marketEvent = new MarketEvent(window);
         AchievementManager *achievementManager = new AchievementManager(window);
@@ -41,12 +45,6 @@ int main(int argc, char *argv[])
         SamsaraFutures *samsaraFutures = new SamsaraFutures(window);
 
         QList<Asset*> assets = {meritIndex, karmaBond, dharmaFund, samsaraFutures};
-
-        window->setWallet(wallet);
-        window->setAssets(assets);
-        window->setMarketEvent(marketEvent);
-        window->setAchievementManager(achievementManager);
-        window->show();
 
         QTimer *updateTimer = new QTimer(window);
         QObject::connect(updateTimer, &QTimer::timeout, [wallet, marketEvent, assets]() {
@@ -59,6 +57,13 @@ int main(int argc, char *argv[])
             wallet->updateSavingsInterest();
             wallet->applyInflation(dt);
         });
+
+        window->setWallet(wallet);
+        window->setAssets(assets);
+        window->setMarketEvent(marketEvent);
+        window->setAchievementManager(achievementManager);
+        window->setGameTimer(updateTimer);
+        window->show();
         updateTimer->start(100);
     });
 

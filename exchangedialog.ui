@@ -67,11 +67,17 @@
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="tradeAmount">
+            <property name="decimals">
+             <number>4</number>
+            </property>
             <property name="minimum">
              <double>0.01</double>
             </property>
             <property name="maximum">
              <double>100000.00</double>
+            </property>
+            <property name="singleStep">
+             <double>0.05</double>
             </property>
            </widget>
           </item>

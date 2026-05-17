@@ -33,3 +33,17 @@ bool SaveManager::hasSave()
 {
     return QFile::exists(savePath());
 }
+
+double SaveManager::loadNextLifeLoss()
+{
+    QFile file(savePath());
+    if (!file.open(QIODevice::ReadOnly)) {
+        return 0.0;
+    }
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    if (!doc.isObject()) {
+        return 0.0;
+    }
+    QJsonObject root = doc.object();
+    return root["nextLifeLoss"].toDouble(0.0);
+}
