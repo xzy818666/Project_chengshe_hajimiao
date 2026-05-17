@@ -205,55 +205,8 @@ void MeritHall::setGameTimer(QTimer* timer)
 
 void MeritHall::onInstrumentPressed()
 {
-    // 保留 HEAD 的法器点击发光动画效果
-    QLabel *rewardLabel = new QLabel(this);
-    rewardLabel->setText("+2");
-    rewardLabel->setStyleSheet(
-        "QLabel { "
-        "color: #FFD700; "
-        "font-size: 72px; "
-        "font-weight: bold; "
-        "font-family: 'STKaiti', 'STXingkai', 'LiSu', 'KaiTi', serif; "
-        "background: transparent; "
-        "text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700, "
-        "             0 0 40px #FF8C00, 0 0 50px #FF8C00, 0 0 60px #FF4500; "
-        "}"
-    );
-    
-    // 设置在金鱼下方显示，从下方飘出
-    rewardLabel->adjustSize();
-    rewardLabel->move(380, 380);
-    rewardLabel->raise();
-    rewardLabel->show();
-    
-    // 1.5秒后消失
-    QTimer::singleShot(1500, rewardLabel, &QLabel::deleteLater);
-    
-    // 向上浮动并放大的夸张动画
-    QPropertyAnimation *posAnim = new QPropertyAnimation(rewardLabel, "pos");
-    posAnim->setDuration(1500);
-    posAnim->setStartValue(QPoint(380, 380));
-    posAnim->setEndValue(QPoint(380, 50));
-    
-    // 添加缩放动画
-    QPropertyAnimation *scaleAnim = new QPropertyAnimation(rewardLabel, "scale");
-    scaleAnim->setDuration(1500);
-    scaleAnim->setStartValue(0.5);  // 从0.5倍开始
-    scaleAnim->setKeyValueAt(0.2, 1.5);  // 快速放大到1.5倍
-    scaleAnim->setKeyValueAt(0.5, 1.2);  // 稍微缩小
-    scaleAnim->setEndValue(0.8);  // 最终缩小并消失
-    
-    // 添加透明度动画
-    QPropertyAnimation *opacityAnim = new QPropertyAnimation(rewardLabel, "windowOpacity");
-    opacityAnim->setDuration(1500);
-    opacityAnim->setStartValue(1.0);
-    opacityAnim->setKeyValueAt(0.7, 1.0);
-    opacityAnim->setEndValue(0.0);  // 最后淡出
-    
-    // 启动所有动画
-    posAnim->start(QPropertyAnimation::DeleteWhenStopped);
-    scaleAnim->start(QPropertyAnimation::DeleteWhenStopped);
-    opacityAnim->start(QPropertyAnimation::DeleteWhenStopped);
+    // 按压视觉反馈（法器缩小效果）已集成在 QSS 或 updateInstrumentIcon 中
+    // 浮动数字动画移到 onInstrumentClicked 中，以显示实际收益
 }
 
 void MeritHall::onInstrumentReleased()
@@ -267,24 +220,87 @@ void MeritHall::onInstrumentClicked()
 
     m_clickCount++;
     double reward = m_currentInstrument.clickReward();
+    double efficiency = m_wallet->efficiency();
+    double actualReward = reward * efficiency;
+    bool isCrit = false;
 
     if (m_currentInstrument.hasCrit() && (rand() / (double)RAND_MAX) < m_currentInstrument.critChance()) {
-        reward *= 10;
-        ui->feedbackLabel->setText(QString("功德 +%1 (暴击!)").arg(reward));
-    } else {
-        ui->feedbackLabel->setText(QString("功德 +%1").arg(reward));
+        actualReward *= 10;
+        isCrit = true;
     }
 
-    double efficiency = m_wallet->efficiency();
-    m_wallet->earn(reward * efficiency);
+    m_wallet->earn(actualReward);
+
+    // 浮动数字动画（移到点击收益计算后，显示实际数值）
+    QLabel *rewardLabel = new QLabel(this);
+    if (isCrit) {
+        rewardLabel->setText(QString("功德 +%1 (暴击!)").arg(actualReward, 0, 'f', 1));
+        rewardLabel->setStyleSheet(
+            "QLabel { "
+            "color: #FF4500; "
+            "font-size: 72px; "
+            "font-weight: bold; "
+            "font-family: 'STKaiti', 'STXingkai', 'LiSu', 'KaiTi', serif; "
+            "background: transparent; "
+            "text-shadow: 0 0 10px #FF4500, 0 0 20px #FF8C00, 0 0 30px #FFD700; "
+            "}"
+        );
+    } else {
+        rewardLabel->setText(QString("功德 +%1").arg(actualReward, 0, 'f', 1));
+        rewardLabel->setStyleSheet(
+            "QLabel { "
+            "color: #FFD700; "
+            "font-size: 36px; "
+            "font-weight: bold; "
+            "font-family: 'STKaiti', 'STXingkai', 'LiSu', 'KaiTi', serif; "
+            "background: transparent; "
+            "text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700, "
+            "             0 0 40px #FF8C00, 0 0 50px #FF8C00, 0 0 60px #FF4500; "
+            "}"
+        );
+    }
+
+    rewardLabel->adjustSize();
+
+    // 根据金鱼位置动态居中计算起点和终点
+    int w = this->width();
+    int h = this->height();
+    int size = qMax(128, static_cast<int>(qMin(w / 3, h / 3)));
+    int endY = 50; // 原结束位置
+    int startY = qMax(h / 2 - size / 2 - 20, endY + 150); // 金鱼上方一点，但保证足够上升空间
+    int centerX = w / 2 - rewardLabel->width() / 2;
+
+    rewardLabel->move(centerX, startY);
+    rewardLabel->raise();
+    rewardLabel->show();
+
+    QTimer::singleShot(1500, rewardLabel, &QLabel::deleteLater);
+
+    QPropertyAnimation *posAnim = new QPropertyAnimation(rewardLabel, "pos");
+    posAnim->setDuration(1500);
+    posAnim->setStartValue(QPoint(centerX, startY));
+    posAnim->setEndValue(QPoint(centerX, endY));
+
+    QPropertyAnimation *scaleAnim = new QPropertyAnimation(rewardLabel, "scale");
+    scaleAnim->setDuration(1500);
+    scaleAnim->setStartValue(0.5);
+    scaleAnim->setKeyValueAt(0.2, 1.5);
+    scaleAnim->setKeyValueAt(0.5, 1.2);
+    scaleAnim->setEndValue(0.8);
+
+    QPropertyAnimation *opacityAnim = new QPropertyAnimation(rewardLabel, "windowOpacity");
+    opacityAnim->setDuration(1500);
+    opacityAnim->setStartValue(1.0);
+    opacityAnim->setKeyValueAt(0.7, 1.0);
+    opacityAnim->setEndValue(0.0);
+
+    posAnim->start(QPropertyAnimation::DeleteWhenStopped);
+    scaleAnim->start(QPropertyAnimation::DeleteWhenStopped);
+    opacityAnim->start(QPropertyAnimation::DeleteWhenStopped);
 
     if (m_achievementManager) {
         m_achievementManager->onClickReport(m_clickCount);
     }
-
-    QTimer::singleShot(500, [this]() {
-        ui->feedbackLabel->setText("");
-    });
 
     updateHUD();
 }
@@ -663,10 +679,14 @@ void MeritHall::showGameOverDialog()
         layout->addWidget(flavor);
     }
 
+    // 自动存档，避免用户忘记点击
+    bool autoSaved = SaveManager::saveFinal(m_wallet->nextLifeLoss(), m_wallet->yezhang(), "");
+
     QDialogButtonBox *buttons = new QDialogButtonBox(&dialog);
-    QPushButton *saveBtn = buttons->addButton("存档案", QDialogButtonBox::ActionRole);
+    QPushButton *saveBtn = buttons->addButton(autoSaved ? "已自动存档 ✓" : "存档失败 ✗", QDialogButtonBox::ActionRole);
     QPushButton *exitBtn = buttons->addButton("退出", QDialogButtonBox::AcceptRole);
 
+    saveBtn->setEnabled(false);
     saveBtn->setStyleSheet(
         "QPushButton { background-color: #5D4037; color: #FFD700; border: 1px solid #FFD700; padding: 6px 16px; }"
     );
@@ -674,14 +694,6 @@ void MeritHall::showGameOverDialog()
         "QPushButton { background-color: #424242; color: #E0E0E0; border: 1px solid #757575; padding: 6px 16px; }"
     );
 
-    connect(saveBtn, &QPushButton::clicked, [this, saveBtn]() {
-        if (SaveManager::saveFinal(m_wallet->nextLifeLoss(), m_wallet->yezhang(), "")) {
-            saveBtn->setText("已存档 ✓");
-            saveBtn->setEnabled(false);
-        } else {
-            saveBtn->setText("存档失败 ✗");
-        }
-    });
     connect(exitBtn, &QPushButton::clicked, &dialog, &QDialog::accept);
 
     layout->addWidget(buttons);
