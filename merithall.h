@@ -31,6 +31,7 @@ public:
     void setAssets(QList<Asset*> assets);
     void setMarketEvent(MarketEvent* marketEvent);
     void setAchievementManager(AchievementManager* manager);
+    void setGameTimer(QTimer* timer);
 
 private slots:
     void onInstrumentClicked();
@@ -46,6 +47,9 @@ private slots:
     void onShopClicked();
     void onYezhangClicked();
     void onAchievementClicked();
+    void onEndSamsaraClicked();
+    void checkSamsaraLiquidation();
+    void showLiquidationAlert(double loss);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -58,6 +62,7 @@ private:
     QList<Asset*> m_assets;
     MarketEvent* m_marketEvent;
     QTimer* m_updateTimer;
+    QTimer* m_gameTimer = nullptr;
     int m_clickCount;
     double m_autoIncomePerSec;
     QDate m_currentDate;
@@ -74,6 +79,8 @@ private:
 
     void updateInstrumentIcon();
     void createPavilionButtons();
+    void createEndSamsaraButton();
+    void showGameOverDialog();
     void updatePavilionPositions();
     void updateFishGlowPosition();
     void updateFishClickAreaPosition(QPushButton *btn);

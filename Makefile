@@ -69,7 +69,9 @@ SOURCES       = meritbank.cpp \
 		achievementdialog.cpp \
 		portfolioadvisor.cpp \
 		arbitragescanner.cpp \
-		autoinvestor.cpp qrc_resources.cpp \
+		autoinvestor.cpp \
+		startmenu.cpp \
+		savemanager.cpp qrc_resources.cpp \
 		moc_wallet.cpp \
 		moc_asset.cpp \
 		moc_meritindex.cpp \
@@ -85,7 +87,8 @@ SOURCES       = meritbank.cpp \
 		moc_achievementdialog.cpp \
 		moc_portfolioadvisor.cpp \
 		moc_arbitragescanner.cpp \
-		moc_autoinvestor.cpp
+		moc_autoinvestor.cpp \
+		moc_startmenu.cpp
 OBJECTS       = meritbank.o \
 		wallet.o \
 		asset.o \
@@ -104,6 +107,8 @@ OBJECTS       = meritbank.o \
 		portfolioadvisor.o \
 		arbitragescanner.o \
 		autoinvestor.o \
+		startmenu.o \
+		savemanager.o \
 		qrc_resources.o \
 		moc_wallet.o \
 		moc_asset.o \
@@ -120,7 +125,8 @@ OBJECTS       = meritbank.o \
 		moc_achievementdialog.o \
 		moc_portfolioadvisor.o \
 		moc_arbitragescanner.o \
-		moc_autoinvestor.o
+		moc_autoinvestor.o \
+		moc_startmenu.o
 DIST          = ../../Qt/6.11.0/macos/mkspecs/features/spec_pre.prf \
 		../../Qt/6.11.0/macos/mkspecs/features/device_config.prf \
 		../../Qt/6.11.0/macos/mkspecs/common/unix.conf \
@@ -385,7 +391,9 @@ DIST          = ../../Qt/6.11.0/macos/mkspecs/features/spec_pre.prf \
 		achievementdialog.h \
 		portfolioadvisor.h \
 		arbitragescanner.h \
-		autoinvestor.h meritbank.cpp \
+		autoinvestor.h \
+		startmenu.h \
+		savemanager.h meritbank.cpp \
 		wallet.cpp \
 		asset.cpp \
 		meritindex.cpp \
@@ -402,7 +410,9 @@ DIST          = ../../Qt/6.11.0/macos/mkspecs/features/spec_pre.prf \
 		achievementdialog.cpp \
 		portfolioadvisor.cpp \
 		arbitragescanner.cpp \
-		autoinvestor.cpp
+		autoinvestor.cpp \
+		startmenu.cpp \
+		savemanager.cpp
 QMAKE_TARGET  = merit_bank
 DESTDIR       = 
 TARGET        = merit_bank.app/Contents/MacOS/merit_bank
@@ -965,8 +975,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
-	$(COPY_FILE) --parents wallet.h asset.h meritindex.h karmabond.h dharmafund.h samsarafutures.h instrument.h merithall.h bankdialog.h exchangedialog.h shopdialog.h marketevent.h achievementmanager.h achievementdialog.h portfolioadvisor.h arbitragescanner.h autoinvestor.h $(DISTDIR)/
-	$(COPY_FILE) --parents meritbank.cpp wallet.cpp asset.cpp meritindex.cpp karmabond.cpp dharmafund.cpp samsarafutures.cpp instrument.cpp merithall.cpp bankdialog.cpp exchangedialog.cpp shopdialog.cpp marketevent.cpp achievementmanager.cpp achievementdialog.cpp portfolioadvisor.cpp arbitragescanner.cpp autoinvestor.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents wallet.h asset.h meritindex.h karmabond.h dharmafund.h samsarafutures.h instrument.h merithall.h bankdialog.h exchangedialog.h shopdialog.h marketevent.h achievementmanager.h achievementdialog.h portfolioadvisor.h arbitragescanner.h autoinvestor.h startmenu.h savemanager.h $(DISTDIR)/
+	$(COPY_FILE) --parents meritbank.cpp wallet.cpp asset.cpp meritindex.cpp karmabond.cpp dharmafund.cpp samsarafutures.cpp instrument.cpp merithall.cpp bankdialog.cpp exchangedialog.cpp shopdialog.cpp marketevent.cpp achievementmanager.cpp achievementdialog.cpp portfolioadvisor.cpp arbitragescanner.cpp autoinvestor.cpp startmenu.cpp savemanager.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents merithall.ui bankdialog.ui exchangedialog.ui shopdialog.ui $(DISTDIR)/
 
 
@@ -1002,9 +1012,9 @@ qrc_resources.cpp: resources.qrc \
 		images/main_background.jpg
 	/Users/qtx/Qt/6.11.0/macos/libexec/rcc -name resources --no-zstd resources.qrc -o qrc_resources.cpp
 
-compiler_moc_header_make_all: moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp
+compiler_moc_header_make_all: moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp moc_startmenu.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp
+	-$(DEL_FILE) moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp moc_startmenu.cpp
 moc_wallet.cpp: wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
@@ -1143,6 +1153,15 @@ moc_autoinvestor.cpp: autoinvestor.h \
 		../../Qt/6.11.0/macos/libexec/moc
 	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib autoinvestor.h -o moc_autoinvestor.cpp
 
+moc_startmenu.cpp: startmenu.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QComboBox \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
+		../../Qt/6.11.0/macos/libexec/moc
+	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib startmenu.h -o moc_startmenu.cpp
+
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
 compiler_moc_source_make_all:
@@ -1181,10 +1200,14 @@ compiler_clean: compiler_rcc_clean compiler_moc_header_clean compiler_uic_clean
 meritbank.o: meritbank.cpp ../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QApplication \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
-		merithall.h \
-		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMainWindow \
+		startmenu.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QComboBox \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
+		merithall.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMainWindow \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDate \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QFrame \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QPropertyAnimation \
@@ -1271,11 +1294,16 @@ merithall.o: merithall.cpp merithall.h \
 		../../Qt/6.11.0/macos/lib/QtCharts.framework/Headers/QtCharts \
 		shopdialog.h \
 		achievementdialog.h \
+		samsarafutures.h \
+		savemanager.h \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPixmap \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPalette \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QBrush \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QGridLayout \
-		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMessageBox \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialogButtonBox \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o merithall.o merithall.cpp
 
 bankdialog.o: bankdialog.cpp bankdialog.h \
@@ -1375,6 +1403,27 @@ autoinvestor.o: autoinvestor.cpp autoinvestor.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QtMath
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o autoinvestor.o autoinvestor.cpp
 
+startmenu.o: startmenu.cpp startmenu.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QComboBox \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPalette \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QBrush \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPixmap
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o startmenu.o startmenu.cpp
+
+savemanager.o: savemanager.cpp savemanager.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QJsonDocument \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QJsonObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QFile \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDir \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QStandardPaths \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o savemanager.o savemanager.cpp
+
 qrc_resources.o: qrc_resources.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_resources.o qrc_resources.cpp
 
@@ -1425,6 +1474,9 @@ moc_arbitragescanner.o: moc_arbitragescanner.cpp
 
 moc_autoinvestor.o: moc_autoinvestor.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_autoinvestor.o moc_autoinvestor.cpp
+
+moc_startmenu.o: moc_startmenu.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_startmenu.o moc_startmenu.cpp
 
 ####### Install
 

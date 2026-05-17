@@ -4,6 +4,8 @@
 #include "exchangedialog.h"
 #include "shopdialog.h"
 #include "achievementdialog.h"
+#include "samsarafutures.h"
+#include "savemanager.h"
 #include <cstdlib>
 #include <QPixmap>
 #include <QPalette>
@@ -13,6 +15,10 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QWidget>
+#include <QMessageBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
 
 MeritHall::MeritHall(QWidget *parent)
     : QMainWindow(parent)
@@ -78,6 +84,7 @@ MeritHall::MeritHall(QWidget *parent)
 
     // 创建四栋阁楼按钮
     createPavilionButtons();
+    createEndSamsaraButton();
 
     setupEventPopup();
 
@@ -151,6 +158,13 @@ void MeritHall::hideEventPopup()
 {
     if (!m_eventPopup) return;
 
+    m_eventHideTimer->stop();
+
+    // 如果已经在隐藏状态，无需重复动画
+    if (m_eventPopup->geometry().y() <= -60) {
+        return;
+    }
+
     QRect startRect(20, 10, width() - 40, 50);
     QRect endRect(20, -60, width() - 40, 50);
 
@@ -182,6 +196,11 @@ void MeritHall::setMarketEvent(MarketEvent* marketEvent)
 void MeritHall::setAchievementManager(AchievementManager* manager)
 {
     m_achievementManager = manager;
+}
+
+void MeritHall::setGameTimer(QTimer* timer)
+{
+    m_gameTimer = timer;
 }
 
 void MeritHall::onInstrumentPressed()
@@ -274,9 +293,11 @@ void MeritHall::updateAutoIncome()
 {
     if (!m_wallet) return;
 
+    checkSamsaraLiquidation();
+
     // 推进游戏日期：每 30 秒为一天
     m_dayTickCounter++;
-    if (m_dayTickCounter >= 1) {
+    if (m_dayTickCounter >= 30) {
         m_dayTickCounter = 0;
         m_currentDate = m_currentDate.addDays(1);
         updateDateDisplay();
@@ -327,6 +348,20 @@ void MeritHall::updateHUD()
     } else {
         ui->inflationLabel->setStyleSheet("color: #B0B0B0;");
     }
+
+    // 显示下世功德池
+    QLabel *nextLifeLabel = findChild<QLabel*>("nextLifeLabel");
+    if (!nextLifeLabel) {
+        nextLifeLabel = new QLabel(this);
+        nextLifeLabel->setObjectName("nextLifeLabel");
+        nextLifeLabel->setAlignment(Qt::AlignCenter);
+        // 插入到 hudLayout 第2行
+        ui->hudLayout->addWidget(nextLifeLabel, 2, 0, 1, 2);
+    }
+    nextLifeLabel->setText(QString("下世储备: %1 | 已消耗: %2")
+        .arg(m_wallet->nextLifeMeritPool(), 0, 'f', 0)
+        .arg(m_wallet->nextLifeLoss(), 0, 'f', 0));
+    nextLifeLabel->setStyleSheet("color: #FF8C00; font-weight: bold;");
 
     if (m_achievementManager) {
         m_achievementManager->onMeritChanged(m_wallet->merit());
@@ -545,4 +580,170 @@ void MeritHall::onAchievementClicked()
     if (!m_achievementManager) return;
     AchievementDialog dialog(m_achievementManager, this);
     dialog.exec();
+}
+
+void MeritHall::createEndSamsaraButton()
+{
+    QPushButton *endBtn = new QPushButton("☸ 结束本轮轮回", this);
+    endBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: #B71C1C;"
+        "  color: #FFFFFF;"
+        "  font-size: 12px;"
+        "  font-weight: bold;"
+        "  border: 1px solid #FF5252;"
+        "  border-radius: 4px;"
+        "  padding: 2px 8px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #D32F2F;"
+        "}"
+    );
+    endBtn->setCursor(Qt::PointingHandCursor);
+    endBtn->setGeometry(width() - 140, 10, 120, 28);
+    connect(endBtn, &QPushButton::clicked, this, &MeritHall::onEndSamsaraClicked);
+    endBtn->raise();
+    endBtn->show();
+}
+
+void MeritHall::onEndSamsaraClicked()
+{
+    if (m_updateTimer) {
+        m_updateTimer->stop();
+    }
+    if (m_gameTimer) {
+        m_gameTimer->stop();
+    }
+    showGameOverDialog();
+}
+
+void MeritHall::showGameOverDialog()
+{
+    if (!m_wallet) return;
+
+    QDialog dialog(this);
+    dialog.setWindowTitle("轮回结算");
+    dialog.setFixedSize(400, 300);
+    dialog.setStyleSheet("background-color: #2D2D2D; color: #E0E0E0;");
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    layout->setSpacing(12);
+    layout->setAlignment(Qt::AlignCenter);
+
+    QLabel *title = new QLabel("☸ 本轮轮回已结束 ☸", &dialog);
+    title->setStyleSheet("font-size: 22px; font-weight: bold; color: #FFD700;");
+    title->setAlignment(Qt::AlignCenter);
+    layout->addWidget(title);
+
+    double assetValue = 0;
+    for (Asset* asset : m_assets) {
+        assetValue += m_wallet->getAssetShares(asset->id()) * asset->price();
+    }
+    double netWorth = m_wallet->merit() + assetValue + m_wallet->savingsBalance() - m_wallet->totalDebt();
+
+    QLabel *netWorthLabel = new QLabel(QString("最终净资产: %1 功德").arg(netWorth, 0, 'f', 2), &dialog);
+    netWorthLabel->setStyleSheet("font-size: 16px; color: #4FC3F7;");
+    netWorthLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(netWorthLabel);
+
+    QLabel *nextLifeLabel = new QLabel(QString("下世功德消耗: %1").arg(m_wallet->nextLifeLoss(), 0, 'f', 2), &dialog);
+    nextLifeLabel->setStyleSheet("font-size: 16px; color: #FF8C00;");
+    nextLifeLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(nextLifeLabel);
+
+    QLabel *yezhangLabel = new QLabel(QString("业障值: %1").arg(m_wallet->yezhang(), 0, 'f', 0), &dialog);
+    yezhangLabel->setStyleSheet("font-size: 16px; color: #EF5350;");
+    yezhangLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(yezhangLabel);
+
+    if (m_wallet->nextLifeLoss() > 0) {
+        QLabel *flavor = new QLabel("\"上辈子造了什么孽...\"", &dialog);
+        flavor->setStyleSheet("font-size: 13px; color: #B0B0B0; font-style: italic;");
+        flavor->setAlignment(Qt::AlignCenter);
+        layout->addWidget(flavor);
+    }
+
+    QDialogButtonBox *buttons = new QDialogButtonBox(&dialog);
+    QPushButton *saveBtn = buttons->addButton("存档案", QDialogButtonBox::ActionRole);
+    QPushButton *exitBtn = buttons->addButton("退出", QDialogButtonBox::AcceptRole);
+
+    saveBtn->setStyleSheet(
+        "QPushButton { background-color: #5D4037; color: #FFD700; border: 1px solid #FFD700; padding: 6px 16px; }"
+    );
+    exitBtn->setStyleSheet(
+        "QPushButton { background-color: #424242; color: #E0E0E0; border: 1px solid #757575; padding: 6px 16px; }"
+    );
+
+    connect(saveBtn, &QPushButton::clicked, [this, saveBtn]() {
+        if (SaveManager::saveFinal(m_wallet->nextLifeLoss(), m_wallet->yezhang(), "")) {
+            saveBtn->setText("已存档 ✓");
+            saveBtn->setEnabled(false);
+        } else {
+            saveBtn->setText("存档失败 ✗");
+        }
+    });
+    connect(exitBtn, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+    layout->addWidget(buttons);
+    dialog.exec();
+
+    // 结算后关闭主窗口
+    close();
+}
+
+void MeritHall::checkSamsaraLiquidation()
+{
+    if (!m_wallet) return;
+
+    double shares = m_wallet->getAssetShares("samsara_futures");
+    if (shares <= 0) return;
+
+    Asset* samsara = nullptr;
+    for (Asset* a : m_assets) {
+        if (a->id() == "samsara_futures") {
+            samsara = a;
+            break;
+        }
+    }
+    if (!samsara) return;
+
+    double price = samsara->price();
+    double costBasis = m_wallet->getAssetCostBasis("samsara_futures");
+    double value = shares * price;
+
+    if (costBasis <= 0) return;
+
+    SamsaraFutures* futures = qobject_cast<SamsaraFutures*>(samsara);
+    if (!futures) return;
+
+    if (value < costBasis * futures->maintenanceMargin()) {
+        double loss = costBasis - value;
+        if (loss < 0) loss = 0;
+
+        m_wallet->applySamsaraLoss(loss);
+        m_wallet->removeAsset("samsara_futures", shares);
+        m_wallet->clearCostBasis("samsara_futures");
+
+        showLiquidationAlert(loss);
+        updateHUD();
+    }
+}
+
+void MeritHall::showLiquidationAlert(double loss)
+{
+    QString msg = QString("⚠ 轮回孽缘已爆仓！\n"
+                          "强制平仓亏损: %1 功德\n"
+                          "其中 %2 从下世功德扣除，"
+                          "剩余 %3 计入当世债务。")
+                      .arg(loss, 0, 'f', 2)
+                      .arg(qMin(loss, m_wallet ? m_wallet->nextLifeMeritPool() + loss : 0.0), 0, 'f', 2)
+                      .arg(qMax(0.0, loss - (m_wallet ? m_wallet->nextLifeMeritPool() : 0.0)), 0, 'f', 2);
+
+    // 修正：applySamsaraLoss 已经扣除了池子，所以这里不能直接读 nextLifeMeritPool
+    // 简化消息
+    QMessageBox::warning(this, "爆仓警告",
+        QString("轮回孽缘维持率跌破 30%，已强制平仓！\n"
+                "本次亏损: %1 功德\n"
+                "优先从下世功德扣除，不足部分计入债务。")
+            .arg(loss, 0, 'f', 2));
 }
