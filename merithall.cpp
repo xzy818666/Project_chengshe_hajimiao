@@ -51,8 +51,17 @@ MeritHall::MeritHall(QWidget *parent)
         "}"
     );
     m_fishGlowLayer->show();
-    
-    // 创建透明点击区域（覆盖金鱼位置）- 带悬停发光效果
+
+    // 创建木鱼图标（覆盖在背景金鱼位置之上）
+    m_fishIconLabel = new QLabel(this);
+    m_fishIconLabel->setObjectName("fishIconLabel");
+    m_fishIconLabel->setPixmap(QPixmap(":/images/wooden_fish.png"));
+    m_fishIconLabel->setScaledContents(true);
+    updateFishIconPosition();
+    m_fishIconLabel->setAttribute(Qt::WA_TransparentForMouseEvents); // 点击穿透到下层按钮
+    m_fishIconLabel->show();
+
+    // 创建透明点击区域（覆盖木鱼位置）- 带悬停发光效果
     m_fishClickArea = new QPushButton(this);
     m_fishClickArea->setObjectName("fishClickArea");
     updateFishClickAreaPosition(m_fishClickArea);
@@ -539,6 +548,7 @@ void MeritHall::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
     updatePavilionPositions();
     updateFishGlowPosition();
+    updateFishIconPosition();
     updateFishClickAreaPosition(m_fishClickArea);
 }
 
@@ -548,6 +558,17 @@ void MeritHall::updateFishGlowPosition()
     int h = this->height();
     int size = qMax(128, static_cast<int>(qMin(w / 3, h / 3) ));
     m_fishGlowLayer->setGeometry(w/2 - size/2, h/2 - size/2, size, size);
+}
+
+void MeritHall::updateFishIconPosition()
+{
+    int w = this->width();
+    int h = this->height();
+    int size = qMax(128, static_cast<int>(qMin(w / 3, h / 3) ));
+    // 木鱼原图 1536x1024，宽高比 3:2，保持比例以高度为基准
+    int iconH = size;
+    int iconW = static_cast<int>(iconH * 1.5);
+    m_fishIconLabel->setGeometry(w/2 - iconW/2, h/2 - iconH/2, iconW, iconH);
 }
 
 void MeritHall::updateFishClickAreaPosition(QPushButton *btn)

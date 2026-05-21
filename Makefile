@@ -1009,7 +1009,8 @@ compiler_rcc_clean:
 	-$(DEL_FILE) qrc_resources.cpp
 qrc_resources.cpp: resources.qrc \
 		../../Qt/6.11.0/macos/libexec/rcc \
-		images/main_background.jpg
+		images/main_background.jpg \
+		images/wooden_fish.png
 	/Users/qtx/Qt/6.11.0/macos/libexec/rcc -name resources --no-zstd resources.qrc -o qrc_resources.cpp
 
 compiler_moc_header_make_all: moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp moc_startmenu.cpp

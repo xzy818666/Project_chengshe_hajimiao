@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>images/main_background.jpg</file>
+        <file>images/wooden_fish.png</file>
+        <file>images/ancient_chinese_hall_v2.png</file>
     </qresource>
     <qresource prefix="/images"/>
 </RCC>

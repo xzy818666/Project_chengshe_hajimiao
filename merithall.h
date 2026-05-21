@@ -87,6 +87,7 @@ private:
     void showGameOverDialog();
     void updatePavilionPositions();
     void updateFishGlowPosition();
+    void updateFishIconPosition();
     void updateFishClickAreaPosition(QPushButton *btn);
     void setupEventPopup();
     void showEventPopup(const QString& text);
@@ -96,6 +97,7 @@ private:
     QPushButton *pavilionShopBtn;
     QPushButton *pavilionAchievementBtn;
     QLabel *m_fishGlowLayer;
+    QLabel *m_fishIconLabel;
     QPushButton *m_fishClickArea;
 };
 
