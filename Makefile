@@ -1009,7 +1009,20 @@ compiler_rcc_clean:
 	-$(DEL_FILE) qrc_resources.cpp
 qrc_resources.cpp: resources.qrc \
 		../../Qt/6.11.0/macos/libexec/rcc \
-		images/main_background.jpg
+		images/main_background.jpg \
+		images/basic_muyu_unstriked.jpg \
+		images/door_glow.png \
+		images/basic_muyu_striked.jpg \
+		images/modified_main_background.jpg \
+		images/electronic_incense.jpg \
+		images/ancient_chinese_hall_v2.png \
+		images/quantum_beads_unstriked.jpg \
+		images/quantum_beads_striked.jpg \
+		images/main_background_new.jpg \
+		images/ai_chanting.jpg \
+		images/turbo_muyu_unstriked.jpg \
+		images/wooden_fish.png \
+		images/turbo_muyu_striked.jpg
 	/Users/qtx/Qt/6.11.0/macos/libexec/rcc -name resources --no-zstd resources.qrc -o qrc_resources.cpp
 
 compiler_moc_header_make_all: moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp moc_startmenu.cpp
@@ -1085,6 +1098,8 @@ moc_bankdialog.cpp: bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
+		asset.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		../../Qt/6.11.0/macos/libexec/moc
 	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib bankdialog.h -o moc_bankdialog.cpp
 
@@ -1225,7 +1240,8 @@ meritbank.o: meritbank.cpp ../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers
 		meritindex.h \
 		karmabond.h \
 		dharmafund.h \
-		samsarafutures.h
+		samsarafutures.h \
+		savemanager.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o meritbank.o meritbank.cpp
 
 wallet.o: wallet.cpp wallet.h \
@@ -1312,7 +1328,11 @@ bankdialog.o: bankdialog.cpp bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
-		ui_bankdialog.h
+		asset.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
+		ui_bankdialog.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMessageBox \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QTableWidgetItem
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bankdialog.o bankdialog.cpp
 
 exchangedialog.o: exchangedialog.cpp exchangedialog.h \

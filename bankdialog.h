@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "wallet.h"
+#include "asset.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class BankDialog; }
@@ -17,6 +18,7 @@ public:
     ~BankDialog();
 
     void setWallet(Wallet* wallet);
+    void setAssets(QList<Asset*> assets);
 
 private slots:
     void onDepositSavings();
@@ -26,12 +28,16 @@ private slots:
     void onBorrow();
     void onRepay();
     void onConfess();
+    void onAddMargin();
+    void onCloseAllLeverage();
     void updateInfo();
     void updateFixedDeposits();
+    void updateLeverageTable();
 
 private:
     Ui::BankDialog *ui;
     Wallet* m_wallet;
+    QList<Asset*> m_assets;
 
     static const double FIXED_RATE_7DAY;
     static const double FIXED_RATE_30DAY;

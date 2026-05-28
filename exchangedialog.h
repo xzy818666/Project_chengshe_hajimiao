@@ -27,6 +27,7 @@ public:
     void setWallet(Wallet* wallet);
     void setAssets(QList<Asset*> assets);
     void setMarketEvent(MarketEvent* marketEvent);
+    void setMaxLeverage(double maxLeverage);
 
 private slots:
     void onAssetSelected(int index);
@@ -60,8 +61,11 @@ private:
     QLabel* m_arbitrageLabel;
 
     void updateChart();
+    void updateLeverageCombo();
     QString riskLevelToString(Asset::RiskLevel level);
     QString getPortfolioRiskRating();
+
+    double m_maxLeverage = 1.0;
 };
 
 #endif // EXCHANGEDIALOG_H

@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
         window->setMarketEvent(marketEvent);
         window->setAchievementManager(achievementManager);
         window->setGameTimer(updateTimer);
+        window->setLeverageParams(config.maxLeverage, config.maintenanceMarginRate);
         window->show();
         updateTimer->start(100);
     });
