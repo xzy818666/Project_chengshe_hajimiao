@@ -22,9 +22,35 @@
       </attribute>
       <layout class="QVBoxLayout" name="savingsLayout">
        <item>
+        <widget class="QLabel" name="savingsTitle">
+         <property name="text">
+          <string>🏦 活期储蓄</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 16px; font-weight: bold; color: #2E7D32;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="savingsBalance">
          <property name="text">
           <string>活期余额: 0</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 14px; color: #2E7D32; font-weight: bold;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="savingsHint">
+         <property name="text">
+          <string>💡 活期年化利率 5%，按秒计息。可随时存取。</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: #757575; font-size: 11px;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -43,23 +69,58 @@
          <item>
           <widget class="QPushButton" name="depositBtn">
            <property name="text">
-            <string>存入</string>
+            <string>📥 存入</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #2E7D32; color: white; font-weight: bold; padding: 4px 12px;</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="withdrawBtn">
            <property name="text">
-            <string>取出</string>
+            <string>📤 取出</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #E65100; color: white; font-weight: bold; padding: 4px 12px;</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
+        <spacer name="savingsSpacer1">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QLabel" name="fdLabel">
          <property name="text">
-          <string>定期存款</string>
+          <string>📅 定期存款</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 13px; font-weight: bold; color: #424242;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="fdHint">
+         <property name="text">
+          <string>💡 提前支取将收取 5% 手续费，到期自动还本付息。</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: #757575; font-size: 11px;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -80,6 +141,9 @@
            <property name="text">
             <string>7天 (6%)</string>
            </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #1565C0; color: white; padding: 4px 8px;</string>
+           </property>
           </widget>
          </item>
          <item>
@@ -87,12 +151,18 @@
            <property name="text">
             <string>30天 (8%)</string>
            </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #1565C0; color: white; padding: 4px 8px;</string>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="buyFD90Btn">
            <property name="text">
             <string>90天 (12%)</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #1565C0; color: white; padding: 4px 8px;</string>
            </property>
           </widget>
          </item>
@@ -106,6 +176,9 @@
          <property name="text">
           <string>提取选中</string>
          </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: #5D4037; color: #FFD700; font-weight: bold; padding: 4px 12px;</string>
+         </property>
         </widget>
        </item>
       </layout>
@@ -116,9 +189,22 @@
       </attribute>
       <layout class="QVBoxLayout" name="loanLayout">
        <item>
+        <widget class="QLabel" name="loanTitle">
+         <property name="text">
+          <string>📊 借贷概况</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 16px; font-weight: bold; color: #1565C0;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="debtBalance">
          <property name="text">
           <string>债务总额: 0</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 14px; color: #C62828;</string>
          </property>
         </widget>
        </item>
@@ -127,12 +213,54 @@
          <property name="text">
           <string>信用分: 500</string>
          </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 14px; color: #2E7D32;</string>
+         </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="maxBorrow">
          <property name="text">
           <string>可借额度: 0</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 14px; color: #E65100;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="loanHint">
+         <property name="text">
+          <string>💡 借款日利率 1%，逾期债务将转化为业障。可借额度 = 信用分 × 2。</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: #757575; font-size: 11px;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="loanSpacer1">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="loanActionLabel">
+         <property name="text">
+          <string>📝 输入金额进行操作</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 13px; font-weight: bold; color: #424242;</string>
          </property>
         </widget>
        </item>
@@ -151,7 +279,10 @@
          <item>
           <widget class="QPushButton" name="borrowBtn">
            <property name="text">
-            <string>借款</string>
+            <string>📥 借款</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #1565C0; color: white; font-weight: bold; padding: 4px 12px;</string>
            </property>
           </widget>
          </item>
@@ -168,11 +299,40 @@
          <item>
           <widget class="QPushButton" name="repayBtn">
            <property name="text">
-            <string>还款</string>
+            <string>📤 还款</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #2E7D32; color: white; font-weight: bold; padding: 4px 12px;</string>
            </property>
           </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="loanActionHint">
+         <property name="text">
+          <string>⚠️ 借款会降低信用分（金额的10%），还款可恢复信用分（金额的5%）。债务超过额度1.5倍时，超额部分10%转为业障。</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: #757575; font-size: 11px;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="loanSpacer2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -182,9 +342,22 @@
       </attribute>
       <layout class="QVBoxLayout" name="yezhangLayout">
        <item>
+        <widget class="QLabel" name="yezhangTitle">
+         <property name="text">
+          <string>🔥 业障状态</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 16px; font-weight: bold; color: #C62828;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="yezhangValue">
          <property name="text">
           <string>业障值: 0</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 14px; color: #C62828; font-weight: bold;</string>
          </property>
         </widget>
        </item>
@@ -192,9 +365,71 @@
         <widget class="QProgressBar" name="yezhangBar"/>
        </item>
        <item>
+        <widget class="QLabel" name="yezhangHint">
+         <property name="text">
+          <string>💡 业障值越高，敲木鱼与自动收益效率越低。当业障达到2000时，效率降至最低50%。</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: #757575; font-size: 11px;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="efficiencyValue">
          <property name="text">
           <string>效率: 100%</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 14px; color: #2E7D32; font-weight: bold;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="efficiencyFormula">
+         <property name="text">
+          <string>📐 效率公式: max(50%, 100% − 业障值 ÷ 2000)</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: #757575; font-size: 11px; font-family: monospace;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="yezhangSpacer1">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="confessTitle">
+         <property name="text">
+          <string>🙏 忏悔消业</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 13px; font-weight: bold; color: #424242;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="confessHint">
+         <property name="text">
+          <string>1 功德可消除 1 点业障。请心怀诚意，量力而行。</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: #757575; font-size: 11px;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -211,9 +446,115 @@
        <item>
         <widget class="QPushButton" name="confessBtn">
          <property name="text">
-          <string>忏悔 (消耗功德)</string>
+          <string>🙏 忏悔 (消耗功德)</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: #5D4037; color: #FFD700; font-weight: bold; padding: 4px 12px;</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="yezhangSpacer2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="leverageTab">
+      <attribute name="title">
+       <string>杠杆账户</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="leverageLayout">
+       <item>
+        <widget class="QLabel" name="leverageTitle">
+         <property name="text">
+          <string>⚡ 杠杆账户</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 16px; font-weight: bold; color: #E65100;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="leverageDebtLabel">
+         <property name="text">
+          <string>杠杆负债: 0</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 14px; color: #C62828; font-weight: bold;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="totalBorrowedLabel">
+         <property name="text">
+          <string>当前借款: 0</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 14px; color: #E65100;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="leverageHint">
+         <property name="text">
+          <string>💡 保证金率低于维持线时将持续产生业障。追加保证金可降低杠杆，一键平仓可了结所有持仓。</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: #757575; font-size: 11px;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="leverageTable">
+         <property name="columnCount">
+          <number>5</number>
+         </property>
+         <property name="horizontalHeaderLabels">
+          <stringlist>
+           <string>资产</string>
+           <string>份额</string>
+           <string>本金</string>
+           <string>借款</string>
+           <string>保证金率</string>
+          </stringlist>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="leverageControls">
+         <item>
+          <widget class="QPushButton" name="addMarginBtn">
+           <property name="text">
+            <string>➕ 追加保证金</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #1565C0; color: white; font-weight: bold; padding: 4px 12px;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="closeAllLeverageBtn">
+           <property name="text">
+            <string>⚠️ 一键平仓</string>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: #C62828; color: white; font-weight: bold; padding: 4px 12px;</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

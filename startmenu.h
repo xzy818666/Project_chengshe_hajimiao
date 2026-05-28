@@ -18,6 +18,8 @@ struct GameConfig {
     double nextLifePool;
     double inflationRate;
     double creditScore;
+    double maxLeverage;
+    double maintenanceMarginRate;
 };
 
 GameConfig configForDifficulty(GameDifficulty diff);

@@ -32,6 +32,7 @@ public:
     void setMarketEvent(MarketEvent* marketEvent);
     void setAchievementManager(AchievementManager* manager);
     void setGameTimer(QTimer* timer);
+    void setLeverageParams(double maxLeverage, double maintenanceMarginRate);
 
 private slots:
     void onInstrumentClicked();
@@ -49,6 +50,7 @@ private slots:
     void onAchievementClicked();
     void onEndSamsaraClicked();
     void checkSamsaraLiquidation();
+    void checkLeverageMargin();
     void showLiquidationAlert(double loss);
 
 protected:
@@ -67,6 +69,8 @@ private:
     double m_autoIncomePerSec;
     QDate m_currentDate;
     int m_dayTickCounter;
+    double m_maxLeverage = 1.0;
+    double m_maintenanceMarginRate = 0.20;
 
     AchievementManager* m_achievementManager = nullptr;
 
@@ -78,11 +82,16 @@ private:
     QString m_lastEventText;
 
     void updateInstrumentIcon();
+    void updateInstrumentDisplay();
+    void updateCloudInstrumentPosition();
+    void updateLotusInstrumentPosition();
+    QLabel* createDoorGlowLabel();
     void createPavilionButtons();
     void createEndSamsaraButton();
     void showGameOverDialog();
     void updatePavilionPositions();
     void updateFishGlowPosition();
+    void updateFishIconPosition();
     void updateFishClickAreaPosition(QPushButton *btn);
     void setupEventPopup();
     void showEventPopup(const QString& text);
@@ -92,7 +101,18 @@ private:
     QPushButton *pavilionShopBtn;
     QPushButton *pavilionAchievementBtn;
     QLabel *m_fishGlowLayer;
+    QLabel *m_fishIconLabel;
     QPushButton *m_fishClickArea;
+
+    // 建筑门口光芒层（hover 时显示）
+    QLabel *m_bankGlowLabel;
+    QLabel *m_exchangeGlowLabel;
+    QLabel *m_shopGlowLabel;
+    QLabel *m_achievementGlowLabel;
+
+    // 法器贴图显示
+    QLabel *m_cloudInstrumentLabel;   // 云上法器（基础木鱼/涡轮/量子佛珠）
+    QLabel *m_lotusInstrumentLabel;   // 莲台法器（电子烧香/AI诵经机），初始为空
 };
 
 #endif // MERITHALL_H

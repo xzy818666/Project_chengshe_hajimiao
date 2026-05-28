@@ -34,6 +34,24 @@ public:
     double nextLifeLoss() const;
     void applySamsaraLoss(double lossAmount);
 
+    // 杠杆持仓
+    struct LeveragePosition {
+        QString assetId;
+        double shares;
+        double principal;
+        double borrowed;
+        double leverage;
+    };
+    void openLeveragePosition(const QString& assetId, double shares, double principal, double borrowed, double leverage);
+    bool closeLeveragePosition(const QString& assetId, double shares, double price);
+    bool addMarginToPosition(const QString& assetId, double amount);
+    const QMap<QString, LeveragePosition>& leveragePositions() const;
+    double leverageDebt() const;
+    double totalLeverageBorrowed() const;
+    double marginRate(const QString& assetId, double currentPrice) const;
+    void addLeverageDebt(double amount);
+    bool repayLeverageDebt(double amount);
+
     // 通货膨胀
     double dailyInflationRate() const;
     void setDailyInflationRate(double rate);
@@ -79,6 +97,7 @@ signals:
     void assetSold(const QString& assetId, double shares, double revenue, double profit);
     void borrowed(double amount);
     void repaid(double amount);
+    void leverageChanged();
 
 private:
     double m_merit;
@@ -93,6 +112,9 @@ private:
     QMap<QString, double> m_assets;
     QMap<QString, double> m_assetCostBasis;
     QList<FixedDeposit> m_fixedDeposits;
+
+    QMap<QString, LeveragePosition> m_leveragePositions;
+    double m_leverageDebt;
 
     static const double SAVINGS_RATE;
     static const double LOAN_RATE;

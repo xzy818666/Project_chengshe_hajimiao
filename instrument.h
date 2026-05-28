@@ -29,6 +29,11 @@ public:
     bool hasAutoReward() const;
     bool hasMaintenanceCost() const;
 
+    QString unstrikedImagePath() const;
+    QString strikedImagePath() const;
+    bool isLotusInstrument() const;
+    bool isCloudInstrument() const;
+
     static QString typeToString(Type type);
     static Type stringToType(const QString& str);
 
