@@ -96,6 +96,36 @@ QString Instrument::typeToString(Type type)
     }
 }
 
+QString Instrument::unstrikedImagePath() const
+{
+    switch (m_type) {
+    case BasicWoodenFish: return ":/images/basic_muyu_unstriked.jpg";
+    case TurboWoodenFish: return ":/images/turbo_muyu_unstriked.jpg";
+    case QuantumPrayerBeads: return ":/images/quantum_beads_unstriked.jpg";
+    default: return "";
+    }
+}
+
+QString Instrument::strikedImagePath() const
+{
+    switch (m_type) {
+    case BasicWoodenFish: return ":/images/basic_muyu_striked.jpg";
+    case TurboWoodenFish: return ":/images/turbo_muyu_striked.jpg";
+    case QuantumPrayerBeads: return ":/images/quantum_beads_striked.jpg";
+    default: return "";
+    }
+}
+
+bool Instrument::isLotusInstrument() const
+{
+    return m_type == ElectronicIncense || m_type == AIChantingMachine;
+}
+
+bool Instrument::isCloudInstrument() const
+{
+    return !isLotusInstrument();
+}
+
 Instrument::Type Instrument::stringToType(const QString& str)
 {
     if (str == "基础木鱼") return BasicWoodenFish;

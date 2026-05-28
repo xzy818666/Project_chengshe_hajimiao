@@ -82,6 +82,10 @@ private:
     QString m_lastEventText;
 
     void updateInstrumentIcon();
+    void updateInstrumentDisplay();
+    void updateCloudInstrumentPosition();
+    void updateLotusInstrumentPosition();
+    QLabel* createDoorGlowLabel();
     void createPavilionButtons();
     void createEndSamsaraButton();
     void showGameOverDialog();
@@ -99,6 +103,16 @@ private:
     QLabel *m_fishGlowLayer;
     QLabel *m_fishIconLabel;
     QPushButton *m_fishClickArea;
+
+    // 建筑门口光芒层（hover 时显示）
+    QLabel *m_bankGlowLabel;
+    QLabel *m_exchangeGlowLabel;
+    QLabel *m_shopGlowLabel;
+    QLabel *m_achievementGlowLabel;
+
+    // 法器贴图显示
+    QLabel *m_cloudInstrumentLabel;   // 云上法器（基础木鱼/涡轮/量子佛珠）
+    QLabel *m_lotusInstrumentLabel;   // 莲台法器（电子烧香/AI诵经机），初始为空
 };
 
 #endif // MERITHALL_H
