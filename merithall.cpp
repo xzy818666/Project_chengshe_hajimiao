@@ -25,7 +25,7 @@ MeritHall::MeritHall(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MeritHall)
     , m_wallet(nullptr)
-    , m_currentInstrument(Instrument::BasicWoodenFish)
+    , m_cloudInstrument(Instrument::BasicWoodenFish)
     , m_clickCount(0)
     , m_autoIncomePerSec(0)
     , m_currentDate(2026, 1, 1)
@@ -98,18 +98,12 @@ MeritHall::MeritHall(QWidget *parent)
     m_cloudInstrumentLabel->setScaledContents(true);
     m_cloudInstrumentLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
     updateCloudInstrumentPosition();
+    m_cloudInstrumentLabel->raise();
     m_cloudInstrumentLabel->show();
 
-    // 创建莲台法器贴图标签（初始为空/隐藏）
-    m_lotusInstrumentLabel = new QLabel(this);
-    m_lotusInstrumentLabel->setObjectName("lotusInstrumentLabel");
-    m_lotusInstrumentLabel->setScaledContents(true);
-    m_lotusInstrumentLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
-    updateLotusInstrumentPosition();
-    m_lotusInstrumentLabel->hide();
-
     // 初始化法器显示
-    updateInstrumentDisplay();
+    updateCloudInstrumentDisplay();
+    updateLotusInstrumentDisplay();
 
     // 隐藏原来的法器相关控件和默认事件标签
     ui->instrumentIconLabel->hide();
@@ -258,23 +252,18 @@ void MeritHall::setLeverageParams(double maxLeverage, double maintenanceMarginRa
 void MeritHall::onInstrumentPressed()
 {
     // 云上法器切换到敲击状态贴图
-    if (m_currentInstrument.isCloudInstrument()) {
-        QString path = m_currentInstrument.strikedImagePath();
-        if (!path.isEmpty()) {
-            m_cloudInstrumentLabel->setPixmap(QPixmap(path));
-        }
+    QString path = m_cloudInstrument.strikedImagePath();
+    if (!path.isEmpty()) {
+        m_cloudInstrumentLabel->setPixmap(QPixmap(path));
     }
-
 }
 
 void MeritHall::onInstrumentReleased()
 {
     // 云上法器恢复未敲击状态贴图
-    if (m_currentInstrument.isCloudInstrument()) {
-        QString path = m_currentInstrument.unstrikedImagePath();
-        if (!path.isEmpty()) {
-            m_cloudInstrumentLabel->setPixmap(QPixmap(path));
-        }
+    QString path = m_cloudInstrument.unstrikedImagePath();
+    if (!path.isEmpty()) {
+        m_cloudInstrumentLabel->setPixmap(QPixmap(path));
     }
 
     onInstrumentClicked();
@@ -285,12 +274,12 @@ void MeritHall::onInstrumentClicked()
     if (!m_wallet) return;
 
     m_clickCount++;
-    double reward = m_currentInstrument.clickReward();
+    double reward = m_cloudInstrument.clickReward();
     double efficiency = m_wallet->efficiency();
     double actualReward = reward * efficiency;
     bool isCrit = false;
 
-    if (m_currentInstrument.hasCrit() && (rand() / (double)RAND_MAX) < m_currentInstrument.critChance()) {
+    if (m_cloudInstrument.hasCrit() && (rand() / (double)RAND_MAX) < m_cloudInstrument.critChance()) {
         actualReward *= 10;
         isCrit = true;
     }
@@ -386,16 +375,21 @@ void MeritHall::updateAutoIncome()
         updateDateDisplay();
     }
 
-    double autoReward = m_currentInstrument.autoReward();
-    double maintenance = m_currentInstrument.maintenanceCost();
-    double netIncome = autoReward - maintenance;
+    // 累加所有辅助法器的自动收益与维护费
+    double totalAutoReward = 0.0;
+    double totalMaintenance = 0.0;
+    for (const Instrument& inst : m_lotusInstruments) {
+        totalAutoReward += inst.autoReward();
+        totalMaintenance += inst.maintenanceCost();
+    }
+    double netIncome = totalAutoReward - totalMaintenance;
 
     if (netIncome > 0) {
         m_wallet->earn(netIncome);
         m_autoIncomePerSec = netIncome;
-    } else if (maintenance > 0 && m_wallet->merit() >= maintenance) {
-        m_wallet->spend(maintenance);
-        m_autoIncomePerSec = -maintenance;
+    } else if (totalMaintenance > 0 && m_wallet->merit() >= totalMaintenance) {
+        m_wallet->spend(totalMaintenance);
+        m_autoIncomePerSec = -totalMaintenance;
     }
 
     updateHUD();
@@ -522,11 +516,25 @@ void MeritHall::onShopClicked()
 {
     ShopDialog dialog(this);
     dialog.setWallet(m_wallet);
-    connect(&dialog, &ShopDialog::instrumentChanged, [this](const Instrument& instrument) {
-        m_currentInstrument = instrument;
-        ui->instrumentNameLabel->setText(m_currentInstrument.name());
+    connect(&dialog, &ShopDialog::cloudInstrumentChanged, [this](const Instrument& instrument) {
+        m_cloudInstrument = instrument;
+        ui->instrumentNameLabel->setText(m_cloudInstrument.name());
         updateInstrumentIcon();
-        updateInstrumentDisplay();
+        updateCloudInstrumentDisplay();
+    });
+    connect(&dialog, &ShopDialog::lotusInstrumentToggled, [this](const Instrument& instrument) {
+        bool found = false;
+        for (int i = 0; i < m_lotusInstruments.size(); ++i) {
+            if (m_lotusInstruments[i].type() == instrument.type()) {
+                m_lotusInstruments.removeAt(i);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            m_lotusInstruments.append(instrument);
+        }
+        updateLotusInstrumentDisplay();
     });
     dialog.exec();
     updateHUD();
@@ -730,30 +738,58 @@ void MeritHall::updateFishClickAreaPosition(QPushButton *btn)
     btn->setGeometry(w * 0.5 - size/2, h * 0.48 - size/2, size, size);
 }
 
-void MeritHall::updateInstrumentDisplay()
+void MeritHall::updateCloudInstrumentDisplay()
 {
-    if (m_currentInstrument.isCloudInstrument()) {
-        // 云上法器：显示在云海，隐藏莲台
-        QString path = m_currentInstrument.unstrikedImagePath();
-        if (!path.isEmpty()) {
-            m_cloudInstrumentLabel->setPixmap(QPixmap(path));
+    QString path = m_cloudInstrument.unstrikedImagePath();
+    if (!path.isEmpty()) {
+        QPixmap pix(path);
+        if (!pix.isNull()) {
+            m_cloudInstrumentLabel->setPixmap(pix);
         }
-        m_cloudInstrumentLabel->show();
-        m_lotusInstrumentLabel->hide();
-    } else if (m_currentInstrument.isLotusInstrument()) {
-        // 莲台法器：显示在莲台，隐藏云上
-        QString path;
-        if (m_currentInstrument.type() == Instrument::ElectronicIncense) {
-            path = ":/images/electronic_incense.jpg";
-        } else if (m_currentInstrument.type() == Instrument::AIChantingMachine) {
-            path = ":/images/ai_chanting.jpg";
-        }
-        if (!path.isEmpty()) {
-            m_lotusInstrumentLabel->setPixmap(QPixmap(path));
-        }
-        m_lotusInstrumentLabel->show();
-        m_cloudInstrumentLabel->hide();
     }
+    m_cloudInstrumentLabel->raise();
+    m_cloudInstrumentLabel->show();
+}
+
+static QString lotusImagePath(Instrument::Type type)
+{
+    switch (type) {
+    case Instrument::BasicIncense:
+        // TODO: 有基础烧香贴图后替换
+        return ":/images/electronic_incense.jpg";
+    case Instrument::ElectronicIncense:
+        return ":/images/electronic_incense.jpg";
+    case Instrument::AIChantingMachine:
+        return ":/images/ai_chanting.jpg";
+    default:
+        return "";
+    }
+}
+
+void MeritHall::updateLotusInstrumentDisplay()
+{
+    // 同步 labels 数量与辅助法器数量
+    while (m_lotusLabels.size() > m_lotusInstruments.size()) {
+        delete m_lotusLabels.takeLast();
+    }
+    while (m_lotusLabels.size() < m_lotusInstruments.size()) {
+        QLabel* label = new QLabel(this);
+        label->setScaledContents(true);
+        label->setAttribute(Qt::WA_TransparentForMouseEvents);
+        m_lotusLabels.append(label);
+    }
+    for (int i = 0; i < m_lotusInstruments.size(); ++i) {
+        QString path = lotusImagePath(m_lotusInstruments[i].type());
+        if (!path.isEmpty()) {
+            QPixmap pix(path);
+            if (!pix.isNull()) {
+                m_lotusLabels[i]->setPixmap(pix);
+            }
+        }
+        m_lotusLabels[i]->raise();
+        m_lotusLabels[i]->show();
+    }
+    updateLotusInstrumentPosition();
 }
 
 void MeritHall::updateCloudInstrumentPosition()
@@ -769,9 +805,14 @@ void MeritHall::updateLotusInstrumentPosition()
 {
     int w = this->width();
     int h = this->height();
-    int size = qMax(80, static_cast<int>(qMin(w / 5, h / 5) ));
-    // 莲台法器位置：底部莲花台中央
-    m_lotusInstrumentLabel->setGeometry(w * 0.5 - size/2, h * 0.83 - size/2, size, size);
+    int size = qMax(60, static_cast<int>(qMin(w / 6, h / 6) ));
+    int spacing = qMin(30, w / 30);
+    int totalWidth = m_lotusLabels.size() * size + qMax(0, m_lotusLabels.size() - 1) * spacing;
+    int startX = w / 2 - totalWidth / 2;
+    int y = h * 0.83 - size / 2;
+    for (int i = 0; i < m_lotusLabels.size(); ++i) {
+        m_lotusLabels[i]->setGeometry(startX + i * (size + spacing), y, size, size);
+    }
 }
 
 bool MeritHall::eventFilter(QObject *obj, QEvent *event)

@@ -2,6 +2,7 @@
 #define SHOPDIALOG_H
 
 #include <QDialog>
+#include <QSet>
 #include "wallet.h"
 #include "instrument.h"
 
@@ -18,23 +19,27 @@ public:
     ~ShopDialog();
 
     void setWallet(Wallet* wallet);
-    Instrument currentInstrument() const;
 
 signals:
-    void instrumentChanged(const Instrument& instrument);
+    void cloudInstrumentChanged(const Instrument& instrument);
+    void lotusInstrumentToggled(const Instrument& instrument);
 
 private slots:
     void onBuy();
     void onEquip();
+    void onSelectionChanged();
     void updateWallet();
 
 private:
     Ui::ShopDialog *ui;
     Wallet* m_wallet;
-    Instrument m_currentInstrument;
+    Instrument m_currentCloudInstrument;
     Instrument m_selectedInstrument;
+    QSet<int> m_ownedTypes;
+    QSet<int> m_equippedLotusTypes;
 
     void populateShop();
+    void refreshStatus();
 };
 
 #endif // SHOPDIALOG_H

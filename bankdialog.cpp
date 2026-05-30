@@ -15,11 +15,15 @@ BankDialog::BankDialog(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("善财司");
 
-    // 设置 16:9 背景图
-    setFixedSize(960, 540);
-    QPixmap bg(":/images/merit_bank.jpeg");
+    // 适配主界面实际尺寸（默认回退 960×540）
+    QSize sz = parent ? parent->size() : QSize(960, 540);
+    resize(sz.width(), sz.height());
+    setMinimumSize(800, 450);
+
+    // 背景图按当前窗口尺寸缩放
+    QPixmap bg(":/images/merit_bank.png");
     QPalette palette;
-    palette.setBrush(QPalette::Window, bg.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    palette.setBrush(QPalette::Window, bg.scaled(sz, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     setPalette(palette);
     setAutoFillBackground(true);
 

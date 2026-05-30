@@ -77,12 +77,13 @@
 - **正中云海**：法器点击热区（press/release 切换法器贴图）
 - **底部莲花台**：莲台法器显示位置（电子烧香、AI 诵经机）
 
-**法器贴图系统**：
-- 云上法器（press 切换 striked/unstriked）：
-  - 基础木鱼：`basic_muyu_unstriked.jpg` / `basic_muyu_striked.jpg`
+**法器贴图系统（双槽位）**：
+- **主动槽（云上）**：始终装备一件，决定点击收益。press 切换 striked/unstriked：
+  - 基础木鱼：`basic_muyu_unstriked.png` / `basic_muyu_striked.png`
   - 涡轮增压木鱼：`turbo_muyu_unstriked.jpg` / `turbo_muyu_striked.jpg`
-  - 量子佛珠：`quantum_beads_unstriked.jpg` / `quantum_beads_striked.jpg`
-- 莲台法器（静态显示）：
+  - 量子佛珠：`quantum_beads_unstriked.png` / `quantum_beads_striked.png`
+- **辅助槽（莲台）**：可同时装备多件，只提供自动收益/特效，静态 Label 无交互：
+  - 基础烧香：`basic_incense.jpg`（暂无独立贴图，临时复用 `electronic_incense.jpg`）
   - 电子烧香：`electronic_incense.jpg`
   - AI 诵经机：`ai_chanting.jpg`
 
@@ -114,20 +115,38 @@
 
 ### W3 幻缘所 (ExchangeDialog)
 
-**左侧：资产市场列表**
-- 四张资产卡片：众生法缘（Merit Index）、善行福缘（Karma Bond）、因果私缘（Dharma Fund）、轮回孽缘（Samsara Futures）
-- 顶部市场事件跑马灯
+**窗口特性**：
+- 背景图：`stock_exchange.png`（古风交易所场景，1674×940 原图缩放至 1600×900）
+- 窗口固定 1600×900，最小 800×450
+- 控件采用绝对定位，四个面板对应背景图上的画框区域
 
-**右侧：资产详情**
-- **K 线图**：`QLineSeries` 显示最近 100 tick，自动缩放 Y 轴
-- **交易面板**：买入/卖出（支持杠杆买入 1×–3×）；当前持仓、成本均价、市值、浮动盈亏
-- **资产配置标签页**：
-  - `QPieSeries` 持仓占比饼图
-  - 汇总数据：总持仓市值、总浮动盈亏
-  - 风险评级：保守/均衡/激进/赌徒
-  - **智能配置建议**：实时显示 `PortfolioAdvisor` 的 Sharpe 比率加权推荐
-  - **套利提示**：实时显示 `ArbitrageScanner` 发现的定价偏差（当前仅检测因果私缘 vs 理论价）
-  - **定投控制**：开关 + 间隔/金额设置，底层由 `AutoInvestor` 驱动
+**布局分区**：
+- **最上面面板**（382,213～1299,281）：事件跑马灯 `eventTicker`
+- **标签切换按钮**（376,285～594/594,285～794）："交易" / "资产配置" 两标签
+- **中间左面板**（376,340～794,661）：
+  - 交易模式：资产列表 `QListWidget`（众生法缘、善行福缘、因果私缘、轮回孽缘）
+  - 资产配置模式：饼图 `QPieSeries` 显示持仓占比
+- **中间右面板**（882,340～1315,660）：
+  - 交易模式：价格标签 + K线图（`QLineSeries`，最近 100 tick）+ 持仓信息 + 交易输入框 + 杠杆选择 + 买卖按钮
+  - 资产配置模式：总市值、风险评级 + **CAL 风险-收益图**
+- **最下面面板**（361,720～1320,790）：智能推荐、套利检测（横排）+ 自动定投控件
+
+**CAL 风险-收益图**（资产配置右面板）：
+- `QScatterSeries` 蓝色散点：每个资产的（标准差 ×10⁴, 期望收益 ×10⁴）
+- `QScatterSeries` 红色大圆点：当前实际持仓的加权组合点
+- `QLineSeries` 红色虚线射线：资本市场线（CAL），从无风险利率点出发，穿过最大夏普比率资产，向右上方延伸至边界
+- 资产名称标签紧贴散点显示
+
+**核心功能**：
+- 买入/卖出（支持杠杆 1×–3×）
+- **智能配置建议**：`PortfolioAdvisor` 基于 Sharpe 比率加权推荐（已暴露真实的期望收益 `expectedReturn` 和标准差 `risk`）
+- **套利提示**：`ArbitrageScanner` 实时扫描定价偏差
+- **定投控制**：`AutoInvestor` 驱动，可设间隔/金额
+
+**控件样式**：
+- 列表/输入框/下拉框：背景 `transparent`，深褐文字 `#1A0F08`，直接融入背景画面板
+- 按钮：木褐色底 `#8B5A2B` + 米白文字
+- 图表：背景透明，坐标轴深色标签
 
 **轮回孽缘特殊机制**：
 - 卖出亏损时，优先从下世功德扣除，不足部分计入当世债务
@@ -137,15 +156,19 @@
 
 ### W4 法器阁 (ShopDialog)
 
-| 法器 | 价格 | 点击收益 | 自动收益 | 特殊效果 |
-|---|---|---|---|---|
-| 基础木鱼 | 0 | +1/击 | 0 | 新手装备（云上） |
-| 电子烧香 | 500 | 0 | +1/秒 | 持续 60 秒（莲台） |
-| 涡轮增压木鱼 | 2000 | +5/击 | 0 | 云上法器 |
-| 量子佛珠 | 8000 | +2/击 | 0 | 10% 概率 ×10 暴击（云上） |
-| AI 诵经机 | 15000 | 0 | +10/秒 | 每秒扣 1 功德维护费（莲台） |
+| 法器 | 价格 | 点击收益 | 自动收益 | 维护费 | 槽位 | 特殊效果 |
+|---|---|---|---|---|---|---|
+| 基础木鱼 | 0 | +1/击 | 0 | 0 | 主动（云上） | 新手默认装备 |
+| 基础烧香 | 100 | 0 | +0.5/秒 | 0 | 辅助（莲台） | 持续 60 秒 |
+| 电子烧香 | 500 | 0 | +1/秒 | 0 | 辅助（莲台） | 持续 60 秒 |
+| 涡轮增压木鱼 | 2000 | +5/击 | 0 | 0 | 主动（云上） | — |
+| 量子佛珠 | 8000 | +2/击 | 0 | 0 | 主动（云上） | 10% 概率 ×10 暴击 |
+| AI 诵经机 | 15000 | 0 | +10/秒 | 1/秒 | 辅助（莲台） | — |
 
-**交互**：购买 → 装备 → 主界面实时切换法器贴图和位置（云上/莲台）
+**交互**：
+- **主动法器**：购买后装备到云上槽位，替换原有主动法器，影响点击收益。
+- **辅助法器**：购买后可装备/卸下，可同时装备多件到莲台；自动收益与维护费按所有已装备辅助法器累加计算。
+- 主界面实时同步法器贴图与位置。
 
 ---
 
@@ -215,24 +238,33 @@
 | 文件名 | 用途 | 备注 |
 |---|---|---|
 | `modified_main_background_new.jpeg` | 功德堂主背景 | 2560×1440 仙宫场景 |
+| `stock_exchange.png` | 幻缘所背景 | 1674×940 古风交易所场景 |
 | `door_glow.png` | 建筑门口 hover 光芒 | 用户上传，1:3 竖向，已压缩至 256×384 |
-| `basic_muyu_unstriked.jpg` | 基础木鱼未敲击 | 云上法器 |
-| `basic_muyu_striked.jpg` | 基础木鱼敲击 | 云上法器 |
+| `basic_muyu_unstriked.png` | 基础木鱼未敲击 | 云上法器 |
+| `basic_muyu_striked.png` | 基础木鱼敲击 | 云上法器 |
 | `turbo_muyu_unstriked.jpg` | 涡轮木鱼未敲击 | 占位图（红色） |
 | `turbo_muyu_striked.jpg` | 涡轮木鱼敲击 | 占位图（深红） |
-| `quantum_beads_unstriked.jpg` | 量子佛珠未敲击 | 占位图（紫色） |
-| `quantum_beads_striked.jpg` | 量子佛珠敲击 | 占位图（深紫） |
-| `electronic_incense.jpg` | 电子烧香 | 占位图（橙色），莲台法器 |
+| `quantum_beads_unstriked.png` | 量子佛珠未敲击 | 占位图（紫色） |
+| `quantum_beads_striked.png` | 量子佛珠敲击 | 占位图（深紫） |
+| `electronic_incense.jpg` | 电子烧香 / 基础烧香（临时） | 占位图（橙色），莲台法器 |
 | `ai_chanting.jpg` | AI 诵经机 | 占位图（蓝色），莲台法器 |
 
 ---
 
 ## 10. 构建与运行
 
+本机 Qt 6 路径（macOS，ARM64）：
+```bash
+/Users/qtx/Qt/6.11.0/macos/bin/qmake merit_bank.pro
+make -j4
+./merit_bank.app/Contents/MacOS/merit_bank
+```
+
+或若 `qmake` 已在 PATH 中：
 ```bash
 qmake merit_bank.pro
 make -j4
-./merit_bank.app/Contents/MacOS/merit_bank   # macOS
+./merit_bank.app/Contents/MacOS/merit_bank
 ```
 
 依赖：Qt 6（Charts 模块必需）

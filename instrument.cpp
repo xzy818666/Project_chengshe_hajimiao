@@ -13,6 +13,7 @@ double Instrument::price() const
 {
     switch (m_type) {
     case BasicWoodenFish: return 0;
+    case BasicIncense: return 100;
     case ElectronicIncense: return 500;
     case TurboWoodenFish: return 2000;
     case QuantumPrayerBeads: return 8000;
@@ -34,6 +35,7 @@ double Instrument::clickReward() const
 double Instrument::autoReward() const
 {
     switch (m_type) {
+    case BasicIncense: return 0.5;
     case ElectronicIncense: return 1;
     case AIChantingMachine: return 10;
     default: return 0;
@@ -59,6 +61,7 @@ double Instrument::critChance() const
 int Instrument::duration() const
 {
     switch (m_type) {
+    case BasicIncense: return 60;
     case ElectronicIncense: return 60;
     default: return 0;
     }
@@ -88,6 +91,7 @@ QString Instrument::typeToString(Type type)
 {
     switch (type) {
     case BasicWoodenFish: return "基础木鱼";
+    case BasicIncense: return "基础烧香";
     case ElectronicIncense: return "电子烧香";
     case TurboWoodenFish: return "涡轮增压木鱼";
     case QuantumPrayerBeads: return "量子佛珠";
@@ -99,9 +103,9 @@ QString Instrument::typeToString(Type type)
 QString Instrument::unstrikedImagePath() const
 {
     switch (m_type) {
-    case BasicWoodenFish: return ":/images/basic_muyu_unstriked.jpg";
+    case BasicWoodenFish: return ":/images/basic_muyu_unstriked.png";
     case TurboWoodenFish: return ":/images/turbo_muyu_unstriked.jpg";
-    case QuantumPrayerBeads: return ":/images/quantum_beads_unstriked.jpg";
+    case QuantumPrayerBeads: return ":/images/quantum_beads_unstriked.png";
     default: return "";
     }
 }
@@ -109,16 +113,16 @@ QString Instrument::unstrikedImagePath() const
 QString Instrument::strikedImagePath() const
 {
     switch (m_type) {
-    case BasicWoodenFish: return ":/images/basic_muyu_striked.jpg";
+    case BasicWoodenFish: return ":/images/basic_muyu_striked.png";
     case TurboWoodenFish: return ":/images/turbo_muyu_striked.jpg";
-    case QuantumPrayerBeads: return ":/images/quantum_beads_striked.jpg";
+    case QuantumPrayerBeads: return ":/images/quantum_beads_striked.png";
     default: return "";
     }
 }
 
 bool Instrument::isLotusInstrument() const
 {
-    return m_type == ElectronicIncense || m_type == AIChantingMachine;
+    return m_type == BasicIncense || m_type == ElectronicIncense || m_type == AIChantingMachine;
 }
 
 bool Instrument::isCloudInstrument() const
@@ -129,6 +133,7 @@ bool Instrument::isCloudInstrument() const
 Instrument::Type Instrument::stringToType(const QString& str)
 {
     if (str == "基础木鱼") return BasicWoodenFish;
+    if (str == "基础烧香") return BasicIncense;
     if (str == "电子烧香") return ElectronicIncense;
     if (str == "涡轮增压木鱼") return TurboWoodenFish;
     if (str == "量子佛珠") return QuantumPrayerBeads;

@@ -60,7 +60,9 @@ protected:
 private:
     Ui::MeritHall *ui;
     Wallet* m_wallet;
-    Instrument m_currentInstrument;
+    Instrument m_cloudInstrument;              // 主动法器（云上）
+    QList<Instrument> m_lotusInstruments;      // 辅助法器（莲台）
+    QList<QLabel*> m_lotusLabels;
     QList<Asset*> m_assets;
     MarketEvent* m_marketEvent;
     QTimer* m_updateTimer;
@@ -82,9 +84,11 @@ private:
     QString m_lastEventText;
 
     void updateInstrumentIcon();
-    void updateInstrumentDisplay();
+    void updateCloudInstrumentDisplay();
+    void updateLotusInstrumentDisplay();
     void updateCloudInstrumentPosition();
     void updateLotusInstrumentPosition();
+    void syncLotusLabels();
     QLabel* createDoorGlowLabel();
     void createPavilionButtons();
     void createEndSamsaraButton();
@@ -112,7 +116,6 @@ private:
 
     // 法器贴图显示
     QLabel *m_cloudInstrumentLabel;   // 云上法器（基础木鱼/涡轮/量子佛珠）
-    QLabel *m_lotusInstrumentLabel;   // 莲台法器（电子烧香/AI诵经机），初始为空
 };
 
 #endif // MERITHALL_H

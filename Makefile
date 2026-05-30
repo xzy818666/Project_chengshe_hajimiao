@@ -1013,15 +1013,16 @@ qrc_resources.cpp: resources.qrc \
 		images/stock_exchange.png \
 		images/modified_main_background_new.jpeg \
 		images/basic_muyu_unstriked.jpg \
+		images/basic_joss_stick.jpg \
+		images/achievement_hall.jpeg \
 		images/door_glow.png \
 		images/basic_muyu_striked.jpg \
+		images/merit_bank.png \
 		images/electronic_incense.jpg \
 		images/quantum_beads_unstriked.jpg \
 		images/quantum_beads_striked.jpg \
-		images/main_background_new.jpg \
 		images/ai_chanting.jpg \
 		images/turbo_muyu_unstriked.jpg \
-		images/merit_bank.jpeg \
 		images/turbo_muyu_striked.jpg
 	/Users/qtx/Qt/6.11.0/macos/libexec/rcc -name resources --no-zstd resources.qrc -o qrc_resources.cpp
 
@@ -1119,6 +1120,7 @@ moc_exchangedialog.cpp: exchangedialog.h \
 
 moc_shopdialog.cpp: shopdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QSet \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
@@ -1357,6 +1359,7 @@ exchangedialog.o: exchangedialog.cpp exchangedialog.h \
 
 shopdialog.o: shopdialog.cpp shopdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QSet \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
@@ -1386,11 +1389,11 @@ achievementdialog.o: achievementdialog.cpp achievementdialog.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QSet \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QStringList \
-		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
-		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QListWidget \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
-		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QBrush \
-		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QColor
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QGridLayout \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPalette \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPixmap \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QBrush
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o achievementdialog.o achievementdialog.cpp
 
 portfolioadvisor.o: portfolioadvisor.cpp portfolioadvisor.h \

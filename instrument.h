@@ -8,6 +8,7 @@ class Instrument
 public:
     enum Type {
         BasicWoodenFish,
+        BasicIncense,
         ElectronicIncense,
         TurboWoodenFish,
         QuantumPrayerBeads,
