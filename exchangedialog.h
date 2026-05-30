@@ -52,6 +52,11 @@ private:
     QChart* m_chart;
     QPieSeries* m_pieSeries;
     QChart* m_pieChart;
+    QScatterSeries* m_calScatter;
+    QScatterSeries* m_calPortfolio;
+    QLineSeries* m_calLine;
+    QChart* m_calChart;
+    QList<QGraphicsItem*> m_calLabels;
     QTimer* m_updateTimer;
 
     PortfolioAdvisor* m_advisor;
@@ -61,8 +66,10 @@ private:
     QLabel* m_arbitrageLabel;
 
     void updateChart();
+    void updateCalChart();
     void updateLeverageCombo();
     QString riskLevelToString(Asset::RiskLevel level);
+    void setTradingMode(bool trading);
     QString getPortfolioRiskRating();
 
     double m_maxLeverage = 1.0;

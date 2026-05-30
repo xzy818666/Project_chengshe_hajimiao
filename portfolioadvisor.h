@@ -25,7 +25,7 @@ public:
     QList<Advice> advise(const QList<Asset*>& assets) const;
 
 private:
-    double calculateSharpe(const QVector<double>& history) const;
+    double calculateSharpe(const QVector<double>& history, double& outMean, double& outStddev) const;
 };
 
 #endif // PORTFOLIOADVISOR_H

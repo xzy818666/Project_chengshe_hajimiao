@@ -20,6 +20,7 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     , m_chart(nullptr)
     , m_pieSeries(nullptr)
     , m_pieChart(nullptr)
+    , m_calPortfolio(nullptr)
     , m_advisor(new PortfolioAdvisor(this))
     , m_scanner(new ArbitrageScanner(this))
     , m_autoInvestor(new AutoInvestor(this))
@@ -29,10 +30,116 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("幻缘所");
 
+    // 将 1674x940 的 UI 缩放到 1600x900（与功德堂主窗口一致）
+    const double sx = 1600.0 / 1674.0;
+    const double sy = 900.0 / 940.0;
+    for (QWidget* w : findChildren<QWidget*>()) {
+        QRect g = w->geometry();
+        w->setGeometry(qRound(g.x() * sx), qRound(g.y() * sy),
+                       qRound(g.width() * sx), qRound(g.height() * sy));
+    }
+
+    // 背景图 scaled 到 1600x900
+    QPixmap bg(":/images/stock_exchange.png");
+    bg = bg.scaled(1600, 900, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QPalette palette = this->palette();
+    palette.setBrush(QPalette::Window, QBrush(bg));
+    this->setPalette(palette);
+    this->setAutoFillBackground(true);
+
+    resize(1600, 900);
+    setMinimumSize(800, 450);
+
+    // ---- 控件古风样式 ----
+    // 列表：完全透明背景 + 深色文字，直接融入背景面板
+    ui->assetList->setStyleSheet(R"(
+        QListWidget {
+            background-color: transparent;
+            border: none;
+            color: #1A0F08;
+            outline: none;
+        }
+        QListWidget::item {
+            padding: 6px;
+            border-bottom: 1px solid rgba(139, 90, 43, 0.15);
+        }
+        QListWidget::item:selected {
+            background-color: rgba(139, 90, 43, 0.28);
+            color: #1A0F08;
+            border-radius: 4px;
+        }
+        QListWidget::item:hover {
+            background-color: rgba(139, 90, 43, 0.15);
+        }
+    )");
+
+    // 按钮：木褐色底 + 米白文字
+    QString btnStyle = R"(
+        QPushButton {
+            background-color: rgba(139, 90, 43, 0.85);
+            color: #FFF8E7;
+            border: 1px solid rgba(100, 60, 20, 0.7);
+            border-radius: 6px;
+            padding: 4px;
+        }
+        QPushButton:hover {
+            background-color: rgba(160, 110, 55, 0.95);
+        }
+        QPushButton:pressed {
+            background-color: rgba(120, 75, 35, 0.95);
+        }
+        QPushButton:disabled {
+            background-color: rgba(139, 90, 43, 0.35);
+            color: #D7CCC8;
+        }
+    )";
+    ui->buyBtn->setStyleSheet(btnStyle);
+    ui->sellBtn->setStyleSheet(btnStyle);
+    ui->tradingTabBtn->setStyleSheet(btnStyle);
+    ui->portfolioTabBtn->setStyleSheet(btnStyle);
+
+    // 输入框/下拉框：透明底 + 细边框，保留系统默认箭头按钮
+    QString inputStyle = R"(
+        QDoubleSpinBox, QComboBox {
+            background-color: transparent;
+            border: 1px solid rgba(139, 90, 43, 0.4);
+            border-radius: 4px;
+            color: #1A0F08;
+            padding: 2px 4px;
+        }
+        QComboBox::drop-down {
+            width: 20px;
+            border-left: 1px solid rgba(139, 90, 43, 0.3);
+        }
+        QComboBox QAbstractItemView {
+            background-color: rgba(250, 245, 235, 0.95);
+            color: #1A0F08;
+            selection-background-color: rgba(139, 90, 43, 0.25);
+        }
+    )";
+    ui->tradeAmount->setStyleSheet(inputStyle);
+    ui->leverageCombo->setStyleSheet(inputStyle);
+
+    // 标签统一深色，确保在浅色面板上清晰可读
+    QString labelStyle = "color: #1A0F08; font-size: 13px;";
+    ui->currentPrice->setStyleSheet(labelStyle);
+    ui->change24h->setStyleSheet(labelStyle);
+    ui->shares->setStyleSheet(labelStyle);
+    ui->value->setStyleSheet(labelStyle);
+    ui->leverageLabel->setStyleSheet(labelStyle);
+    ui->totalPortfolio->setStyleSheet(labelStyle);
+    ui->portfolioRisk->setStyleSheet(labelStyle);
+    ui->eventTicker->setStyleSheet("color: #1A0F08; font-size: 18px; font-weight: bold;");
+
+    // 图表视图透明
+    ui->chartView->setStyleSheet("background: transparent;");
+    ui->pieView->setStyleSheet("background: transparent;");
+
     connect(ui->assetList, &QListWidget::currentRowChanged, this, &ExchangeDialog::onAssetSelected);
     connect(ui->buyBtn, &QPushButton::clicked, this, &ExchangeDialog::onBuy);
     connect(ui->sellBtn, &QPushButton::clicked, this, &ExchangeDialog::onSell);
-    connect(ui->portfolioBtn, &QPushButton::clicked, this, &ExchangeDialog::showPortfolioView);
+    connect(ui->tradingTabBtn, &QPushButton::clicked, this, [this]() { setTradingMode(true); });
+    connect(ui->portfolioTabBtn, &QPushButton::clicked, this, [this]() { setTradingMode(false); });
 
     ui->tradeAmount->setDecimals(4);
     ui->tradeAmount->setSingleStep(0.05);
@@ -41,15 +148,16 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     // 初始化杠杆选择（默认只有1×，等setMaxLeverage后更新）
     ui->leverageCombo->addItem("1×", 1.0);
 
-    // 添加交易提示标签
-    QLabel* hintLabel = new QLabel("💡 买入时输入功德金额，卖出时输入持仓份额", this);
+    // 添加交易提示标签（放在 shares/value 与 tradeAmount 之间）
+    QLabel* hintLabel = new QLabel("💡 买入时输入功德金额，卖出时输入持仓份额", ui->detailWidget);
+    hintLabel->setGeometry(qRound(10 * sx), qRound(224 * sy), qRound(413 * sx), qRound(16 * sy));
     hintLabel->setAlignment(Qt::AlignCenter);
-    hintLabel->setStyleSheet("color: #666; font-size: 11px;");
-    int btnIdx = ui->detailLayout->indexOf(ui->tradeButtons);
-    ui->detailLayout->insertWidget(btnIdx, hintLabel);
+    hintLabel->setStyleSheet("color: #1A0F08; font-size: 11px;");
 
-    ui->chartView->setMinimumHeight(200);
-    ui->pieView->setMinimumHeight(200);
+    // 显式确保 chartView 高度足够，并优化图表内部边距
+    ui->chartView->setGeometry(qRound(10 * sx), qRound(22 * sy), qRound(413 * sx), qRound(180 * sy));
+    ui->chartView->setMinimumHeight(qRound(180 * sy));
+    ui->pieView->setMinimumHeight(qRound(200 * sy));
 
     m_priceSeries = new QLineSeries();
     m_chart = new QChart();
@@ -57,6 +165,13 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     m_chart->legend()->hide();
     m_chart->setTitle("价格走势");
     m_chart->setAnimationOptions(QChart::NoAnimation);
+    m_chart->setBackgroundBrush(QBrush(QColor(0, 0, 0, 0)));
+    m_chart->setPlotAreaBackgroundBrush(QBrush(QColor(245, 240, 230, 40)));
+    m_chart->setPlotAreaBackgroundVisible(true);
+    m_chart->setMargins(QMargins(8, 8, 8, 8));
+    QFont chartTitleFont = m_chart->titleFont();
+    chartTitleFont.setPointSize(10);
+    m_chart->setTitleFont(chartTitleFont);
     ui->chartView->setChart(m_chart);
 
     m_pieSeries = new QPieSeries();
@@ -64,38 +179,109 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     m_pieChart->addSeries(m_pieSeries);
     m_pieChart->legend()->setAlignment(Qt::AlignRight);
     m_pieChart->setTitle("资产配置");
+    m_pieChart->setBackgroundBrush(QBrush(QColor(0, 0, 0, 0)));
+    m_pieChart->setPlotAreaBackgroundBrush(QBrush(QColor(245, 240, 230, 40)));
+    m_pieChart->setPlotAreaBackgroundVisible(true);
+    m_pieChart->setMargins(QMargins(8, 8, 8, 8));
+    QFont pieTitleFont = m_pieChart->titleFont();
+    pieTitleFont.setPointSize(10);
+    m_pieChart->setTitleFont(pieTitleFont);
     ui->pieView->setChart(m_pieChart);
 
-    // 智能推荐与套利标签
-    m_adviceLabel = new QLabel("📊 智能推荐: 计算中...", this);
-    m_adviceLabel->setStyleSheet("color: #2E7D32; font-weight: bold;");
-    m_arbitrageLabel = new QLabel("🔍 套利检测: 扫描中...", this);
-    m_arbitrageLabel->setStyleSheet("color: #1565C0;");
-    int eventIdx = ui->verticalLayout->indexOf(ui->eventTicker);
-    ui->verticalLayout->insertWidget(eventIdx + 1, m_adviceLabel);
-    ui->verticalLayout->insertWidget(eventIdx + 2, m_arbitrageLabel);
+    // CAL 风险-收益图
+    m_calScatter = new QScatterSeries();
+    m_calScatter->setMarkerSize(10);
+    m_calScatter->setColor(QColor("#1565C0"));
+    m_calPortfolio = new QScatterSeries();
+    m_calPortfolio->setMarkerSize(14);
+    m_calPortfolio->setColor(QColor("#C62828"));
+    m_calPortfolio->setBorderColor(QColor("#FFFFFF"));
+    m_calLine = new QLineSeries();
+    m_calLine->setColor(QColor("#C62828"));
+    m_calLine->setPen(QPen(QColor("#C62828"), 2, Qt::DashLine));
+    m_calChart = new QChart();
+    m_calChart->addSeries(m_calScatter);
+    m_calChart->addSeries(m_calPortfolio);
+    m_calChart->addSeries(m_calLine);
+    m_calChart->legend()->hide();
+    m_calChart->setTitle("风险-收益 (CAL)");
+    m_calChart->setBackgroundBrush(QBrush(QColor(0, 0, 0, 0)));
+    m_calChart->setPlotAreaBackgroundBrush(QBrush(QColor(245, 240, 230, 40)));
+    m_calChart->setPlotAreaBackgroundVisible(true);
+    m_calChart->setMargins(QMargins(8, 8, 8, 8));
+    QFont calTitleFont = m_calChart->titleFont();
+    calTitleFont.setPointSize(10);
+    m_calChart->setTitleFont(calTitleFont);
+    ui->calView->setStyleSheet("background: transparent;");
+    ui->calView->setChart(m_calChart);
 
-    // 自动定投控件
+    // 智能推荐与套利标签 — 最下面面板（横着排列）
+    m_adviceLabel = new QLabel(" 智能推荐: 计算中...", this);
+    m_adviceLabel->setGeometry(qRound(361 * sx), qRound(722 * sy), qRound(470 * sx), qRound(22 * sy));
+    m_adviceLabel->setStyleSheet("color: #2E7D32; font-weight: bold;");
+
+    m_arbitrageLabel = new QLabel(" 套利检测: 扫描中...", this);
+    m_arbitrageLabel->setGeometry(qRound(850 * sx), qRound(722 * sy), qRound(470 * sx), qRound(22 * sy));
+    m_arbitrageLabel->setStyleSheet("color: #1565C0;");
+
+    // 自动定投控件 — 最下面面板
     QWidget* autoWidget = new QWidget(this);
+    autoWidget->setGeometry(qRound(361 * sx), qRound(750 * sy), qRound(959 * sx), qRound(35 * sy));
     QHBoxLayout* autoLayout = new QHBoxLayout(autoWidget);
     autoLayout->setContentsMargins(0, 0, 0, 0);
-    QCheckBox* autoCheck = new QCheckBox("自动定投", this);
-    QSpinBox* intervalSpin = new QSpinBox(this);
+    QCheckBox* autoCheck = new QCheckBox("自动定投", autoWidget);
+    QSpinBox* intervalSpin = new QSpinBox(autoWidget);
     intervalSpin->setRange(10, 3600);
     intervalSpin->setSuffix("秒");
     intervalSpin->setValue(60);
     intervalSpin->setEnabled(false);
-    QDoubleSpinBox* amountSpin = new QDoubleSpinBox(this);
+    QDoubleSpinBox* amountSpin = new QDoubleSpinBox(autoWidget);
     amountSpin->setRange(1, 100000);
     amountSpin->setValue(100);
     amountSpin->setSuffix("功德");
     amountSpin->setEnabled(false);
+
+    QString autoLabelStyle = "color: #1A0F08; font-size: 13px;";
+    QString autoInputStyle = R"(
+        QSpinBox, QDoubleSpinBox {
+            background-color: transparent;
+            border: 1px solid rgba(139, 90, 43, 0.4);
+            border-radius: 4px;
+            color: #1A0F08;
+            padding: 2px 4px;
+        }
+    )";
+    QString checkStyle = R"(
+        QCheckBox {
+            color: #1A0F08;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        QCheckBox::indicator {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(139, 90, 43, 0.7);
+            border-radius: 4px;
+            background-color: transparent;
+        }
+        QCheckBox::indicator:checked {
+            background-color: rgba(139, 90, 43, 0.8);
+        }
+    )";
+    autoCheck->setStyleSheet(checkStyle);
+    intervalSpin->setStyleSheet(autoInputStyle);
+    amountSpin->setStyleSheet(autoInputStyle);
+
+    QLabel* intervalLabel = new QLabel("间隔", autoWidget);
+    intervalLabel->setStyleSheet(autoLabelStyle);
+    QLabel* amountLabel = new QLabel("金额", autoWidget);
+    amountLabel->setStyleSheet(autoLabelStyle);
+
     autoLayout->addWidget(autoCheck);
-    autoLayout->addWidget(new QLabel("间隔", this));
+    autoLayout->addWidget(intervalLabel);
     autoLayout->addWidget(intervalSpin);
-    autoLayout->addWidget(new QLabel("金额", this));
+    autoLayout->addWidget(amountLabel);
     autoLayout->addWidget(amountSpin);
-    ui->verticalLayout->insertWidget(ui->verticalLayout->count() - 1, autoWidget);
 
     connect(autoCheck, &QCheckBox::toggled, intervalSpin, &QSpinBox::setEnabled);
     connect(autoCheck, &QCheckBox::toggled, amountSpin, &QDoubleSpinBox::setEnabled);
@@ -110,6 +296,9 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     connect(m_updateTimer, &QTimer::timeout, this, &ExchangeDialog::updateAdvice);
     connect(m_updateTimer, &QTimer::timeout, this, &ExchangeDialog::updateArbitrage);
     m_updateTimer->start(100);
+
+    // 默认显示交易模式
+    setTradingMode(true);
 }
 
 ExchangeDialog::~ExchangeDialog()
@@ -145,6 +334,27 @@ void ExchangeDialog::setMaxLeverage(double maxLeverage)
 {
     m_maxLeverage = maxLeverage;
     updateLeverageCombo();
+}
+
+void ExchangeDialog::setTradingMode(bool trading)
+{
+    // 左面板
+    ui->assetList->setVisible(trading);
+    ui->pieView->setVisible(!trading);
+
+    // 右面板
+    ui->detailWidget->setVisible(trading);
+    ui->portfolioRightWidget->setVisible(!trading);
+
+    // 标签按钮状态
+    ui->tradingTabBtn->setEnabled(!trading);
+    ui->portfolioTabBtn->setEnabled(trading);
+
+    // 切换到资产配置时更新饼图和 CAL 图
+    if (!trading) {
+        showPortfolioView();
+        updateCalChart();
+    }
 }
 
 void ExchangeDialog::updateLeverageCombo()
@@ -201,7 +411,7 @@ void ExchangeDialog::onBuy()
         }
         if (borrowed > m_wallet->maxBorrow() * 0.5) {
             QMessageBox::information(this, "买入失败",
-                QString("杠杆借款 %1 超过可用信用额度的50%上限（%2）")
+                QString("杠杆借款 %1 超过可用信用额度的50%%上限（%2）")
                     .arg(borrowed, 0, 'f', 2).arg(m_wallet->maxBorrow() * 0.5, 0, 'f', 2));
             return;
         }
@@ -309,14 +519,16 @@ void ExchangeDialog::updatePrices()
 
 void ExchangeDialog::updatePortfolio()
 {
-    if (!m_wallet || !m_selectedAsset) return;
+    if (!m_wallet) return;
 
-    double shares = m_wallet->getAssetShares(m_selectedAsset->id());
-    double price = m_selectedAsset->price();
-    double value = shares * price;
+    if (m_selectedAsset) {
+        double shares = m_wallet->getAssetShares(m_selectedAsset->id());
+        double price = m_selectedAsset->price();
+        double value = shares * price;
 
-    ui->shares->setText(QString("持仓份额: %1").arg(shares, 0, 'f', 4));
-    ui->value->setText(QString("市值: %1").arg(value, 0, 'f', 2));
+        ui->shares->setText(QString("持仓份额: %1").arg(shares, 0, 'f', 4));
+        ui->value->setText(QString("市值: %1").arg(value, 0, 'f', 2));
+    }
 
     double totalValue = 0;
     for (Asset* asset : m_assets) {
@@ -329,27 +541,26 @@ void ExchangeDialog::updateEventTicker()
 {
     if (m_marketEvent && m_marketEvent->isActive()) {
         ui->eventTicker->setText(m_marketEvent->currentEvent());
-        ui->eventTicker->setStyleSheet("color: orange; font-weight: bold;");
+        ui->eventTicker->setStyleSheet("color: #E65100; font-size: 18px; font-weight: bold;");
     } else {
         ui->eventTicker->setText("市场平稳运行中...");
-        ui->eventTicker->setStyleSheet("");
+        ui->eventTicker->setStyleSheet("color: #1A0F08; font-size: 18px; font-weight: bold;");
     }
 }
 
 void ExchangeDialog::showPortfolioView()
 {
+    if (!m_wallet) return;
+
     m_pieSeries->clear();
-    double totalValue = 0;
 
     for (Asset* asset : m_assets) {
         double value = m_wallet->getAssetShares(asset->id()) * asset->price();
-        totalValue += value;
         if (value > 0) {
             m_pieSeries->append(asset->name(), value);
         }
     }
 
-    ui->tabWidget->setCurrentIndex(1);
     ui->portfolioRisk->setText(QString("风险评级: %1").arg(getPortfolioRiskRating()));
 }
 
@@ -363,7 +574,7 @@ void ExchangeDialog::updateAdvice()
             text += QString("%1(%2%) ").arg(a.assetName).arg(a.weight * 100, 0, 'f', 0);
         }
     }
-    if (text == "📊 智能推荐: ") {
+    if (text == " 智能推荐: ") {
         text += "暂无明确建议";
     }
     m_adviceLabel->setText(text);
@@ -374,10 +585,10 @@ void ExchangeDialog::updateArbitrage()
     if (!m_scanner || m_assets.isEmpty()) return;
     auto ops = m_scanner->scan(m_assets);
     if (ops.isEmpty()) {
-        m_arbitrageLabel->setText("🔍 套利检测: 未发现机会");
+        m_arbitrageLabel->setText(" 套利检测: 未发现机会");
         m_arbitrageLabel->setStyleSheet("color: #1565C0;");
     } else {
-        QString text = "⚡ 套利检测: ";
+        QString text = " 套利检测: ";
         for (const auto& op : ops) {
             text += op.description + " ";
         }
@@ -394,11 +605,7 @@ void ExchangeDialog::onAutoInvestToggled(bool checked)
 
 void ExchangeDialog::onAutoInvestSettingsChanged()
 {
-    if (QSpinBox* interval = findChild<QSpinBox*>()) {
-        // 可能找到多个 QSpinBox，我们需要通过 objectName 区分
-        // 但上面的 lambda 已经通过 sender 处理了。这个方法其实不需要了。
-        // 不，connect 已经把值传给了 AutoInvestor。这里只是保留接口。
-    }
+    // 保留接口，实际值通过信号自动传递
 }
 
 void ExchangeDialog::updateChart()
@@ -427,17 +634,21 @@ void ExchangeDialog::updateChart()
         if (axisX) {
             axisX->setLabelFormat("%d");
             axisX->setRange(0, DAY_TICKS - 1);
+            axisX->setLabelsColor(QColor("#1A0F08"));
         }
         if (axisY) {
             axisY->setLabelFormat("%.2f");
+            axisY->setLabelsColor(QColor("#1A0F08"));
         }
     } else {
         auto* axisX = qobject_cast<QValueAxis*>(m_chart->axes(Qt::Horizontal).first());
         auto* axisY = qobject_cast<QValueAxis*>(m_chart->axes(Qt::Vertical).first());
         if (axisX) {
             axisX->setRange(0, DAY_TICKS - 1);
+            axisX->setLabelsColor(QColor("#1A0F08"));
         }
         if (axisY) {
+            axisY->setLabelsColor(QColor("#1A0F08"));
             double minPrice = *std::min_element(history.begin() + start, history.end());
             double maxPrice = *std::max_element(history.begin() + start, history.end());
             if (qFuzzyCompare(minPrice, maxPrice)) {
@@ -447,6 +658,156 @@ void ExchangeDialog::updateChart()
                 axisY->setRange(minPrice - padding, maxPrice + padding);
             }
         }
+    }
+}
+
+void ExchangeDialog::updateCalChart()
+{
+    if (!m_advisor || m_assets.isEmpty() || !m_wallet) return;
+
+    auto advice = m_advisor->advise(m_assets);
+    m_calScatter->clear();
+    m_calPortfolio->clear();
+    m_calLine->clear();
+
+    // 清理旧标签
+    for (QGraphicsItem* item : m_calLabels) {
+        if (item->scene()) item->scene()->removeItem(item);
+        delete item;
+    }
+    m_calLabels.clear();
+
+    const double rfRate = 0.04 / 86400.0;
+    const double SCALE = 10000.0;
+    double maxSharpe = -999.0;
+    double bestRisk = 0.0;
+    double bestReturn = rfRate;
+
+    double minX = 0.0, maxX = 0.0;
+    double minY = rfRate * SCALE, maxY = rfRate * SCALE;
+
+    double totalValue = 0.0;
+    for (Asset* asset : m_assets) {
+        totalValue += m_wallet->getAssetShares(asset->id()) * asset->price();
+    }
+
+    double portReturn = 0.0;
+    double portRiskSq = 0.0;
+    QMap<QString, double> assetPrices;
+    for (Asset* asset : m_assets) {
+        assetPrices[asset->id()] = asset->price();
+    }
+
+    for (const auto& a : advice) {
+        if (a.risk > 1e-10) {
+            double sx = a.risk * SCALE;
+            double sy = a.expectedReturn * SCALE;
+            m_calScatter->append(sx, sy);
+            minX = qMin(minX, sx);
+            maxX = qMax(maxX, sx);
+            minY = qMin(minY, sy);
+            maxY = qMax(maxY, sy);
+
+            double sharpe = (a.expectedReturn - rfRate) / a.risk;
+            if (sharpe > maxSharpe) {
+                maxSharpe = sharpe;
+                bestRisk = a.risk;
+                bestReturn = a.expectedReturn;
+            }
+
+            // 计算当前组合点（简化：假设资产间不相关）
+            if (totalValue > 0) {
+                double shares = m_wallet->getAssetShares(a.assetId);
+                double price = assetPrices.value(a.assetId, 0.0);
+                double assetValue = shares * price;
+                double w = assetValue / totalValue;
+                portReturn += w * a.expectedReturn;
+                portRiskSq += w * w * a.risk * a.risk;
+            }
+        }
+    }
+
+    // 当前资产配置点
+    if (totalValue > 0 && portRiskSq > 0) {
+        double portRisk = qSqrt(portRiskSq);
+        m_calPortfolio->append(portRisk * SCALE, portReturn * SCALE);
+        minX = qMin(minX, portRisk * SCALE);
+        maxX = qMax(maxX, portRisk * SCALE);
+        minY = qMin(minY, portReturn * SCALE);
+        maxY = qMax(maxY, portReturn * SCALE);
+    }
+
+    // 坐标轴范围先确定（包含 CAL 射线延长点）
+    double xPad = (maxX - minX) * 0.15 + 0.1;
+    double yPad = (maxY - minY) * 0.15 + 0.1;
+    double axisXMax = maxX + xPad;
+    double axisYMin = minY - yPad;
+    double axisYMax = maxY + yPad;
+
+    // CAL 射线：从无风险利率点出发，穿过最优资产点，延伸到右边界
+    double calStartX = 0.0;
+    double calStartY = rfRate * SCALE;
+    double calEndX = axisXMax;
+    double calEndY = calStartY;
+    if (bestRisk > 1e-10) {
+        double slope = (bestReturn * SCALE - calStartY) / (bestRisk * SCALE);
+        calEndY = calStartY + slope * calEndX;
+        axisYMax = qMax(axisYMax, calEndY + yPad);
+    }
+    m_calLine->append(calStartX, calStartY);
+    m_calLine->append(calEndX, calEndY);
+
+    if (m_calChart->axes(Qt::Horizontal).isEmpty()) {
+        m_calChart->createDefaultAxes();
+    }
+    auto* axisX = qobject_cast<QValueAxis*>(m_calChart->axes(Qt::Horizontal).first());
+    auto* axisY = qobject_cast<QValueAxis*>(m_calChart->axes(Qt::Vertical).first());
+    if (axisX) {
+        axisX->setTitleText("风险 (标准差 ×10⁴)");
+        axisX->setLabelsColor(QColor("#1A0F08"));
+        axisX->setLabelFormat("%.2f");
+        axisX->setRange(qMax(0.0, minX - xPad), axisXMax);
+    }
+    if (axisY) {
+        axisY->setTitleText("期望收益 (×10⁴)");
+        axisY->setLabelsColor(QColor("#1A0F08"));
+        axisY->setLabelFormat("%.2f");
+        axisY->setRange(axisYMin, axisYMax);
+    }
+
+    // 添加资产名称标签（mapToPosition 转 scene 坐标）
+    QGraphicsScene* scene = ui->calView->scene();
+    if (!scene) return;
+
+    for (const auto& a : advice) {
+        if (a.risk > 1e-10) {
+            QPointF chartPos = m_calChart->mapToPosition(QPointF(a.risk * SCALE, a.expectedReturn * SCALE), m_calScatter);
+            QPointF scenePos = m_calChart->mapToScene(chartPos);
+            QGraphicsTextItem* label = new QGraphicsTextItem(a.assetName);
+            label->setDefaultTextColor(QColor("#1A0F08"));
+            QFont font = label->font();
+            font.setPointSize(8);
+            label->setFont(font);
+            label->setPos(scenePos.x() + 4, scenePos.y() - 6);
+            scene->addItem(label);
+            m_calLabels.append(label);
+        }
+    }
+
+    // 组合点标签
+    if (totalValue > 0 && portRiskSq > 0) {
+        double portRisk = qSqrt(portRiskSq);
+        QPointF chartPos = m_calChart->mapToPosition(QPointF(portRisk * SCALE, portReturn * SCALE), m_calPortfolio);
+        QPointF scenePos = m_calChart->mapToScene(chartPos);
+        QGraphicsTextItem* label = new QGraphicsTextItem("当前配置");
+        label->setDefaultTextColor(QColor("#C62828"));
+        QFont font = label->font();
+        font.setPointSize(8);
+        font.setBold(true);
+        label->setFont(font);
+        label->setPos(scenePos.x() + 4, scenePos.y() - 6);
+        scene->addItem(label);
+        m_calLabels.append(label);
     }
 }
 

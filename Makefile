@@ -1010,18 +1010,18 @@ compiler_rcc_clean:
 qrc_resources.cpp: resources.qrc \
 		../../Qt/6.11.0/macos/libexec/rcc \
 		images/main_background.jpg \
+		images/stock_exchange.png \
+		images/modified_main_background_new.jpeg \
 		images/basic_muyu_unstriked.jpg \
 		images/door_glow.png \
 		images/basic_muyu_striked.jpg \
-		images/modified_main_background.jpg \
 		images/electronic_incense.jpg \
-		images/ancient_chinese_hall_v2.png \
 		images/quantum_beads_unstriked.jpg \
 		images/quantum_beads_striked.jpg \
 		images/main_background_new.jpg \
 		images/ai_chanting.jpg \
 		images/turbo_muyu_unstriked.jpg \
-		images/wooden_fish.png \
+		images/merit_bank.jpeg \
 		images/turbo_muyu_striked.jpg
 	/Users/qtx/Qt/6.11.0/macos/libexec/rcc -name resources --no-zstd resources.qrc -o qrc_resources.cpp
 
@@ -1319,7 +1319,8 @@ merithall.o: merithall.cpp merithall.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMessageBox \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialogButtonBox \
-		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QGraphicsDropShadowEffect
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o merithall.o merithall.cpp
 
 bankdialog.o: bankdialog.cpp bankdialog.h \

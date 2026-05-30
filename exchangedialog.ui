@@ -6,152 +6,291 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1674</width>
+    <height>940</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>幻缘所</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="eventTicker">
-     <property name="text">
-      <string>市场平稳运行中...</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTabWidget" name="tabWidget">
-     <widget class="QWidget" name="tradingTab">
-      <attribute name="title">
-       <string>交易</string>
-      </attribute>
-      <layout class="QHBoxLayout" name="tradingLayout">
-       <item>
-        <widget class="QListWidget" name="assetList"/>
-       </item>
-       <item>
-        <widget class="QWidget" name="detailWidget">
-         <layout class="QVBoxLayout" name="detailLayout">
-          <item>
-           <widget class="QLabel" name="currentPrice">
-            <property name="text">
-             <string>价格: 0</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="change24h">
-            <property name="text">
-             <string>24h: 0%</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QChartView" name="chartView"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="shares">
-            <property name="text">
-             <string>持仓份额: 0</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="value">
-            <property name="text">
-             <string>市值: 0</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QDoubleSpinBox" name="tradeAmount">
-            <property name="decimals">
-             <number>4</number>
-            </property>
-            <property name="minimum">
-             <double>0.01</double>
-            </property>
-            <property name="maximum">
-             <double>100000.00</double>
-            </property>
-            <property name="singleStep">
-             <double>0.05</double>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="leverageLayout">
-            <item>
-             <widget class="QLabel" name="leverageLabel">
-              <property name="text">
-               <string>杠杆倍数:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="leverageCombo"/>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="tradeButtons">
-            <item>
-             <widget class="QPushButton" name="buyBtn">
-              <property name="text">
-               <string>买入</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="sellBtn">
-              <property name="text">
-               <string>卖出</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="portfolioTab">
-      <attribute name="title">
-       <string>资产配置</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="portfolioLayout">
-       <item>
-        <widget class="QLabel" name="totalPortfolio">
-         <property name="text">
-          <string>总市值: 0</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="portfolioRisk">
-         <property name="text">
-          <string>风险评级: 保守</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QChartView" name="pieView"/>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="portfolioBtn">
-     <property name="text">
-      <string>查看资产配置</string>
-     </property>
-    </widget>
-   </item>
-  </layout>
+
+  <!-- 事件跑马灯 — 最上面面板 (382,213 ~ 1299,281) -->
+  <widget class="QLabel" name="eventTicker">
+   <property name="geometry">
+    <rect>
+     <x>382</x>
+     <y>213</y>
+     <width>917</width>
+     <height>68</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>市场平稳运行中...</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+
+  <!-- 标签切换按钮 -->
+  <widget class="QPushButton" name="tradingTabBtn">
+   <property name="geometry">
+    <rect>
+     <x>376</x>
+     <y>285</y>
+     <width>200</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>交易</string>
+   </property>
+  </widget>
+
+  <widget class="QPushButton" name="portfolioTabBtn">
+   <property name="geometry">
+    <rect>
+     <x>594</x>
+     <y>285</y>
+     <width>200</width>
+     <height>35</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>资产配置</string>
+   </property>
+  </widget>
+
+  <!-- 中间左面板 — 交易: 资产列表 (376,340 ~ 794,661) -->
+  <widget class="QListWidget" name="assetList">
+   <property name="geometry">
+    <rect>
+     <x>376</x>
+     <y>340</y>
+     <width>418</width>
+     <height>321</height>
+    </rect>
+   </property>
+  </widget>
+
+  <!-- 中间左面板 — 资产配置: 扇形图 (376,340 ~ 794,661) -->
+  <widget class="QChartView" name="pieView">
+   <property name="geometry">
+    <rect>
+     <x>376</x>
+     <y>340</y>
+     <width>418</width>
+     <height>321</height>
+    </rect>
+   </property>
+  </widget>
+
+  <!-- 中间右面板 — 交易模式 (882,340 ~ 1315,660) -->
+  <widget class="QWidget" name="detailWidget">
+   <property name="geometry">
+    <rect>
+     <x>882</x>
+     <y>340</y>
+     <width>433</width>
+     <height>320</height>
+    </rect>
+   </property>
+
+   <widget class="QLabel" name="currentPrice">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>4</y>
+      <width>200</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>价格: 0</string>
+    </property>
+   </widget>
+
+   <widget class="QLabel" name="change24h">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>4</y>
+      <width>200</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>24h: 0%</string>
+    </property>
+   </widget>
+
+   <widget class="QChartView" name="chartView">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>22</y>
+      <width>413</width>
+      <height>180</height>
+     </rect>
+    </property>
+   </widget>
+
+   <widget class="QLabel" name="shares">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>206</y>
+      <width>200</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>持仓份额: 0</string>
+    </property>
+   </widget>
+
+   <widget class="QLabel" name="value">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>206</y>
+      <width>200</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>市值: 0</string>
+    </property>
+   </widget>
+
+   <widget class="QDoubleSpinBox" name="tradeAmount">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>244</y>
+      <width>413</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="decimals">
+     <number>4</number>
+    </property>
+    <property name="minimum">
+     <double>0.01</double>
+    </property>
+    <property name="maximum">
+     <double>100000.00</double>
+    </property>
+    <property name="singleStep">
+     <double>0.05</double>
+    </property>
+   </widget>
+
+   <widget class="QLabel" name="leverageLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>270</y>
+      <width>80</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>杠杆倍数:</string>
+    </property>
+   </widget>
+
+   <widget class="QComboBox" name="leverageCombo">
+    <property name="geometry">
+     <rect>
+      <x>95</x>
+      <y>270</y>
+      <width>100</width>
+      <height>16</height>
+     </rect>
+    </property>
+   </widget>
+
+   <widget class="QPushButton" name="buyBtn">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>294</y>
+      <width>200</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>买入</string>
+    </property>
+   </widget>
+
+   <widget class="QPushButton" name="sellBtn">
+    <property name="geometry">
+     <rect>
+      <x>223</x>
+      <y>294</y>
+      <width>200</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>卖出</string>
+    </property>
+   </widget>
+  </widget>
+
+  <!-- 中间右面板 — 资产配置模式 (882,340 ~ 1315,660) -->
+  <widget class="QWidget" name="portfolioRightWidget">
+   <property name="geometry">
+    <rect>
+     <x>882</x>
+     <y>340</y>
+     <width>433</width>
+     <height>320</height>
+    </rect>
+   </property>
+
+   <widget class="QLabel" name="totalPortfolio">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>390</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>总市值: 0</string>
+    </property>
+   </widget>
+
+   <widget class="QLabel" name="portfolioRisk">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>55</y>
+      <width>390</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>风险评级: 保守</string>
+    </property>
+   </widget>
+
+   <widget class="QChartView" name="calView">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>90</y>
+      <width>413</width>
+      <height>220</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

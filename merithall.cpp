@@ -35,12 +35,13 @@ MeritHall::MeritHall(QWidget *parent)
     setWindowTitle("赛博功德银行 - 功德堂");
 
     // HUD 适配仙宫明亮风格：半透明深色底 + 金色文字
-    ui->hudWidget->setStyleSheet(
+    QString hudStyle =
         "background-color: rgba(30, 40, 60, 0.65); "
         "border: 1px solid rgba(255, 215, 100, 0.4); "
         "border-radius: 10px; "
-        "padding: 4px;"
-    );
+        "padding: 4px;";
+    ui->hudWidget->setStyleSheet(hudStyle);
+    ui->rightHudWidget->setStyleSheet(hudStyle);
 
     setAutoFillBackground(true);
 
@@ -135,9 +136,9 @@ MeritHall::MeritHall(QWidget *parent)
     connect(ui->yezhangBtn, &QPushButton::clicked, this, &MeritHall::onYezhangClicked);
     connect(ui->achievementBtn, &QPushButton::clicked, this, &MeritHall::onAchievementClicked);
 
-    // 适配背景图 1:1 比例，初始化为正方形窗口
-    resize(900, 900);
-    setMinimumSize(800, 800);
+    // 适配背景图 16:9 比例
+    resize(1600, 900);
+    setMinimumSize(800, 450);
 
     m_updateTimer = new QTimer(this);
     connect(m_updateTimer, &QTimer::timeout, this, &MeritHall::updateAutoIncome);
@@ -264,58 +265,6 @@ void MeritHall::onInstrumentPressed()
         }
     }
 
-    // 保留 HEAD 的法器点击发光动画效果
-    QLabel *rewardLabel = new QLabel(this);
-    rewardLabel->setText("+2");
-    rewardLabel->setStyleSheet(
-        "QLabel { "
-        "color: #FFD700; "
-        "font-size: 72px; "
-        "font-weight: bold; "
-        "font-family: 'STKaiti', 'STXingkai', 'LiSu', 'KaiTi', serif; "
-        "background: transparent; "
-        "text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700, "
-        "             0 0 40px #FF8C00, 0 0 50px #FF8C00, 0 0 60px #FF4500; "
-        "}"
-    );
-    
-    // 设置在云上方显示，向上飘出（保持原来 380->50 的 330 像素位移逻辑）
-    rewardLabel->adjustSize();
-    int rw = rewardLabel->width();
-    int cx = width() / 2 - rw / 2;
-    int cy = height() * 0.48;
-    rewardLabel->move(cx, cy);
-    rewardLabel->raise();
-    rewardLabel->show();
-    
-    // 1.5秒后消失
-    QTimer::singleShot(1500, rewardLabel, &QLabel::deleteLater);
-    
-    // 向上浮动并放大的夸张动画
-    QPropertyAnimation *posAnim = new QPropertyAnimation(rewardLabel, "pos");
-    posAnim->setDuration(1500);
-    posAnim->setStartValue(QPoint(cx, cy));
-    posAnim->setEndValue(QPoint(cx, cy - 330));
-    
-    // 添加缩放动画
-    QPropertyAnimation *scaleAnim = new QPropertyAnimation(rewardLabel, "scale");
-    scaleAnim->setDuration(1500);
-    scaleAnim->setStartValue(0.5);  // 从0.5倍开始
-    scaleAnim->setKeyValueAt(0.2, 1.5);  // 快速放大到1.5倍
-    scaleAnim->setKeyValueAt(0.5, 1.2);  // 稍微缩小
-    scaleAnim->setEndValue(0.8);  // 最终缩小并消失
-    
-    // 添加透明度动画
-    QPropertyAnimation *opacityAnim = new QPropertyAnimation(rewardLabel, "windowOpacity");
-    opacityAnim->setDuration(1500);
-    opacityAnim->setStartValue(1.0);
-    opacityAnim->setKeyValueAt(0.7, 1.0);
-    opacityAnim->setEndValue(0.0);  // 最后淡出
-    
-    // 启动所有动画
-    posAnim->start(QPropertyAnimation::DeleteWhenStopped);
-    scaleAnim->start(QPropertyAnimation::DeleteWhenStopped);
-    opacityAnim->start(QPropertyAnimation::DeleteWhenStopped);
 }
 
 void MeritHall::onInstrumentReleased()
@@ -497,8 +446,8 @@ void MeritHall::updateHUD()
         nextLifeLabel = new QLabel(this);
         nextLifeLabel->setObjectName("nextLifeLabel");
         nextLifeLabel->setAlignment(Qt::AlignCenter);
-        // 插入到 hudLayout 第2行
-        ui->hudLayout->addWidget(nextLifeLabel, 2, 0, 1, 2);
+        // 插入到 rightHudLayout 第2行
+        ui->rightHudLayout->addWidget(nextLifeLabel, 2, 0, 1, 2);
     }
     nextLifeLabel->setText(QString("下世储备: %1 | 已消耗: %2")
         .arg(m_wallet->nextLifeMeritPool(), 0, 'f', 0)
@@ -694,51 +643,52 @@ void MeritHall::updatePavilionPositions()
     // 右下：成就
     pavilionAchievementBtn->setGeometry(w * 0.70, h * 0.45, w * 0.30, h * 0.27);
 
-    // 更新门口光芒层位置（基于 2048x2048 背景图的精确像素坐标换算）
+    // 更新门口光芒层位置（基于 2560x1440 背景图的精确像素坐标换算）
     // 背景图缩放比例
-    double scale = static_cast<double>(w) / 2048.0;
+    double scale = static_cast<double>(w) / 2560.0;
 
-    // 法器阁：中心(220,740)，大小 80x243（高为原来的三分之一）
-    int gw1 = static_cast<int>(80 * scale);
-    int gh1 = static_cast<int>(243 * scale);
-    m_shopGlowLabel->setGeometry(static_cast<int>(220 * scale) - gw1/2,
-                                  static_cast<int>((2048 - 740) * scale) - gh1/2,
+    // 法器阁：中心(709,924)，大小 50x150
+    int gw1 = static_cast<int>(50 * scale);
+    int gh1 = static_cast<int>(150 * scale);
+    m_shopGlowLabel->setGeometry(static_cast<int>(709 * scale) - gw1/2,
+                                  static_cast<int>(924 * scale) - gh1/2,
                                   gw1, gh1);
 
-    // 幻缘所：中心(375,1270)，大小 50x150
-    int gw2 = static_cast<int>(50 * scale);
-    int gh2 = static_cast<int>(150 * scale);
-    m_exchangeGlowLabel->setGeometry(static_cast<int>(375 * scale) - gw2/2,
-                                      static_cast<int>((2048 - 1270) * scale) - gh2/2,
+    // 幻缘所：中心(821,556)，大小 30x90
+    int gw2 = static_cast<int>(30 * scale);
+    int gh2 = static_cast<int>(90 * scale);
+    m_exchangeGlowLabel->setGeometry(static_cast<int>(821 * scale) - gw2/2,
+                                      static_cast<int>(556 * scale) - gh2/2,
                                       gw2, gh2);
 
-    // 善财司：中心(1722,1264)，大小 40x130
-    int gw3 = static_cast<int>(40 * scale);
-    int gh3 = static_cast<int>(130 * scale);
-    m_bankGlowLabel->setGeometry(static_cast<int>(1722 * scale) - gw3/2,
-                                  static_cast<int>((2048 - 1264) * scale) - gh3/2,
+    // 善财司：中心(1777,557)，大小 30x90
+    int gw3 = static_cast<int>(30 * scale);
+    int gh3 = static_cast<int>(90 * scale);
+    m_bankGlowLabel->setGeometry(static_cast<int>(1777 * scale) - gw3/2,
+                                  static_cast<int>(557 * scale) - gh3/2,
                                   gw3, gh3);
 
-    // 成就：中心(1850,740)，大小 70x240
-    int gw4 = static_cast<int>(70 * scale);
-    int gh4 = static_cast<int>(240 * scale);
-    m_achievementGlowLabel->setGeometry(static_cast<int>(1850 * scale) - gw4/2,
-                                         static_cast<int>((2048 - 740) * scale) - gh4/2,
+    // 成就：中心(1872,921)，大小 50x150
+    int gw4 = static_cast<int>(50 * scale);
+    int gh4 = static_cast<int>(150 * scale);
+    m_achievementGlowLabel->setGeometry(static_cast<int>(1872 * scale) - gw4/2,
+                                         static_cast<int>(921 * scale) - gh4/2,
                                          gw4, gh4);
 }
 
 void MeritHall::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
-    // 强制保持 1:1 正方形比例，以较大边为准
-    int side = qMax(width(), height());
-    if (width() != side || height() != side) {
-        QTimer::singleShot(0, this, [this, side]() { resize(side, side); });
+    // 强制保持 16:9 比例，以宽度为准
+    int w = width();
+    int expectedH = w * 9 / 16;
+    if (height() != expectedH) {
+        QTimer::singleShot(0, this, [this, w]() { resize(w, w * 9 / 16); });
         return;
     }
 
     // 重新设置背景图，避免平铺
-    QPixmap background(":/images/main_background_new.jpg");
+    QPixmap background(":/images/modified_main_background_new.jpeg");
     QPalette palette;
     palette.setBrush(QPalette::Window, background.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     setPalette(palette);

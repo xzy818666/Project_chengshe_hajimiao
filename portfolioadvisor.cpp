@@ -24,10 +24,11 @@ QList<PortfolioAdvisor::Advice> PortfolioAdvisor::advise(const QList<Asset*>& as
         a.weight = 0.0;
 
         if (history.size() >= 10) {
-            double sharpe = calculateSharpe(history);
+            double mean = 0.0, stddev = 0.0;
+            double sharpe = calculateSharpe(history, mean, stddev);
             sharpes.append(sharpe);
-            a.expectedReturn = sharpe;
-            a.risk = 0.0; // simplified
+            a.expectedReturn = mean;
+            a.risk = stddev;
             if (sharpe > 0) {
                 totalPositiveSharpe += sharpe;
             }
@@ -54,8 +55,10 @@ QList<PortfolioAdvisor::Advice> PortfolioAdvisor::advise(const QList<Asset*>& as
     return result;
 }
 
-double PortfolioAdvisor::calculateSharpe(const QVector<double>& history) const
+double PortfolioAdvisor::calculateSharpe(const QVector<double>& history, double& outMean, double& outStddev) const
 {
+    outMean = 0.0;
+    outStddev = 0.0;
     if (history.size() < 2) return 0.0;
 
     int window = qMin(history.size(), 50);
@@ -80,6 +83,9 @@ double PortfolioAdvisor::calculateSharpe(const QVector<double>& history) const
     double mean = sumReturn / count;
     double variance = (sumSq / count) - (mean * mean);
     double stddev = qSqrt(qMax(0.0, variance));
+
+    outMean = mean;
+    outStddev = stddev;
 
     const double riskFreeRate = 0.04 / 86400.0; // per tick approx
     if (stddev < 1e-8) return mean > riskFreeRate ? 999.0 : 0.0;

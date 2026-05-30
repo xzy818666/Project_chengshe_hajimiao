@@ -2,7 +2,7 @@
     <qresource prefix="/">
         <file>images/main_background.jpg</file>
         <file>images/main_background_new.jpg</file>
-        <file>images/ancient_chinese_hall_v2.png</file>
+        <file>images/stock_exchange.png</file>
         <file>images/basic_muyu_unstriked.jpg</file>
         <file>images/basic_muyu_striked.jpg</file>
         <file>images/turbo_muyu_unstriked.jpg</file>
@@ -12,6 +12,8 @@
         <file>images/electronic_incense.jpg</file>
         <file>images/ai_chanting.jpg</file>
         <file>images/door_glow.png</file>
+        <file>images/modified_main_background_new.jpeg</file>
+        <file>images/merit_bank.jpeg</file>
     </qresource>
     <qresource prefix="/images"/>
 </RCC>

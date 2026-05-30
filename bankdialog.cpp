@@ -15,6 +15,42 @@ BankDialog::BankDialog(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("善财司");
 
+    // 设置 16:9 背景图
+    setFixedSize(960, 540);
+    QPixmap bg(":/images/merit_bank.jpeg");
+    QPalette palette;
+    palette.setBrush(QPalette::Window, bg.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    setPalette(palette);
+    setAutoFillBackground(true);
+
+    // 让标签页占据右半部分（spacer 与 tabWidget 各占 1:1）
+    ui->horizontalLayout->setContentsMargins(0, 0, 0, 0);
+    ui->horizontalLayout->setStretch(0, 1);
+    ui->horizontalLayout->setStretch(1, 1);
+
+    // 标签页半透明，透出背景图
+    ui->tabWidget->setStyleSheet(
+        "QTabWidget::pane { "
+        "  background-color: rgba(30, 40, 60, 0.40); "
+        "  border: 1px solid rgba(255, 215, 100, 0.25); "
+        "} "
+        "QTabBar::tab { "
+        "  background-color: rgba(45, 45, 45, 0.50); "
+        "  color: #E0E0E0; "
+        "  padding: 8px 16px; "
+        "} "
+        "QTabBar::tab:selected { "
+        "  background-color: rgba(30, 40, 60, 0.65); "
+        "  color: #FFD700; "
+        "} "
+        "QTabBar::tab:hover { "
+        "  background-color: rgba(60, 60, 60, 0.60); "
+        "}"
+    );
+    for (int i = 0; i < ui->tabWidget->count(); ++i) {
+        ui->tabWidget->widget(i)->setAutoFillBackground(false);
+    }
+
     connect(ui->depositBtn, &QPushButton::clicked, this, &BankDialog::onDepositSavings);
     connect(ui->withdrawBtn, &QPushButton::clicked, this, &BankDialog::onWithdrawSavings);
     connect(ui->buyFD7Btn, &QPushButton::clicked, [this]() { onBuyFixedDeposit(7, FIXED_RATE_7DAY); });
