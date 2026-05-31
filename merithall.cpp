@@ -755,12 +755,11 @@ static QString lotusImagePath(Instrument::Type type)
 {
     switch (type) {
     case Instrument::BasicIncense:
-        // TODO: 有基础烧香贴图后替换
-        return ":/images/electronic_incense.jpg";
+        return ":/images/basic_joss_stick.png";
     case Instrument::ElectronicIncense:
-        return ":/images/electronic_incense.jpg";
+        return ":/images/electronic_incense.png";
     case Instrument::AIChantingMachine:
-        return ":/images/ai_chanting.jpg";
+        return ":/images/ai_chanting.png";
     default:
         return "";
     }

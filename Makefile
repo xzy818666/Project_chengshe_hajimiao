@@ -1010,20 +1010,22 @@ compiler_rcc_clean:
 qrc_resources.cpp: resources.qrc \
 		../../Qt/6.11.0/macos/libexec/rcc \
 		images/main_background.jpg \
+		images/turbo_muyu_unstriked.png \
+		images/radiance.png \
+		images/turbo_muyu_striked.png \
 		images/stock_exchange.png \
 		images/modified_main_background_new.jpeg \
-		images/basic_muyu_unstriked.jpg \
-		images/basic_joss_stick.jpg \
+		images/instrument_shop.png \
+		images/basic_muyu_striked.png \
+		images/quantum_beads_unstriked.png \
 		images/achievement_hall.jpeg \
+		images/basic_muyu_unstriked.png \
 		images/door_glow.png \
-		images/basic_muyu_striked.jpg \
 		images/merit_bank.png \
-		images/electronic_incense.jpg \
-		images/quantum_beads_unstriked.jpg \
-		images/quantum_beads_striked.jpg \
-		images/ai_chanting.jpg \
-		images/turbo_muyu_unstriked.jpg \
-		images/turbo_muyu_striked.jpg
+		images/ai_chanting.png \
+		images/quantum_beads_striked.png \
+		images/electronic_incense.png \
+		images/basic_joss_stick.png
 	/Users/qtx/Qt/6.11.0/macos/libexec/rcc -name resources --no-zstd resources.qrc -o qrc_resources.cpp
 
 compiler_moc_header_make_all: moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp moc_startmenu.cpp
@@ -1121,6 +1123,7 @@ moc_exchangedialog.cpp: exchangedialog.h \
 moc_shopdialog.cpp: shopdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QSet \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
@@ -1360,13 +1363,19 @@ exchangedialog.o: exchangedialog.cpp exchangedialog.h \
 shopdialog.o: shopdialog.cpp shopdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QSet \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
 		instrument.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
-		ui_shopdialog.h
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QHBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPalette \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPixmap \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QMouseEvent
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o shopdialog.o shopdialog.cpp
 
 marketevent.o: marketevent.cpp marketevent.h \

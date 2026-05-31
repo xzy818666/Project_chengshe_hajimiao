@@ -104,7 +104,7 @@ QString Instrument::unstrikedImagePath() const
 {
     switch (m_type) {
     case BasicWoodenFish: return ":/images/basic_muyu_unstriked.png";
-    case TurboWoodenFish: return ":/images/turbo_muyu_unstriked.jpg";
+    case TurboWoodenFish: return ":/images/turbo_muyu_unstriked.png";
     case QuantumPrayerBeads: return ":/images/quantum_beads_unstriked.png";
     default: return "";
     }
@@ -114,7 +114,7 @@ QString Instrument::strikedImagePath() const
 {
     switch (m_type) {
     case BasicWoodenFish: return ":/images/basic_muyu_striked.png";
-    case TurboWoodenFish: return ":/images/turbo_muyu_striked.jpg";
+    case TurboWoodenFish: return ":/images/turbo_muyu_striked.png";
     case QuantumPrayerBeads: return ":/images/quantum_beads_striked.png";
     default: return "";
     }

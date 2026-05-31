@@ -5,16 +5,18 @@
         <file>images/merit_bank.png</file>
         <file>images/achievement_hall.jpeg</file>
         <file>images/stock_exchange.png</file>
+        <file>images/instrument_shop.png</file>
         <file>images/basic_muyu_unstriked.png</file>
         <file>images/basic_muyu_striked.png</file>
-        <file>images/turbo_muyu_unstriked.jpg</file>
-        <file>images/turbo_muyu_striked.jpg</file>
+        <file>images/turbo_muyu_unstriked.png</file>
+        <file>images/turbo_muyu_striked.png</file>
         <file>images/quantum_beads_unstriked.png</file>
         <file>images/quantum_beads_striked.png</file>
-        <file>images/basic_joss_stick.jpg</file>
-        <file>images/electronic_incense.jpg</file>
-        <file>images/ai_chanting.jpg</file>
+        <file>images/basic_joss_stick.png</file>
+        <file>images/electronic_incense.png</file>
+        <file>images/ai_chanting.png</file>
         <file>images/door_glow.png</file>
+        <file>images/radiance.png</file>
     </qresource>
     <qresource prefix="/images"/>
 </RCC>

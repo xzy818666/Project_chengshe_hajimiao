@@ -80,12 +80,12 @@
 **法器贴图系统（双槽位）**：
 - **主动槽（云上）**：始终装备一件，决定点击收益。press 切换 striked/unstriked：
   - 基础木鱼：`basic_muyu_unstriked.png` / `basic_muyu_striked.png`
-  - 涡轮增压木鱼：`turbo_muyu_unstriked.jpg` / `turbo_muyu_striked.jpg`
+  - 涡轮增压木鱼：`turbo_muyu_unstriked.png` / `turbo_muyu_striked.png`
   - 量子佛珠：`quantum_beads_unstriked.png` / `quantum_beads_striked.png`
 - **辅助槽（莲台）**：可同时装备多件，只提供自动收益/特效，静态 Label 无交互：
-  - 基础烧香：`basic_incense.jpg`（暂无独立贴图，临时复用 `electronic_incense.jpg`）
-  - 电子烧香：`electronic_incense.jpg`
-  - AI 诵经机：`ai_chanting.jpg`
+  - 基础烧香：`basic_incense.png`（暂无独立贴图，临时复用 `electronic_incense.png`）
+  - 电子烧香：`electronic_incense.png`
+  - AI 诵经机：`ai_chanting.png`
 
 **核心交互**：
 - 点击云海 → `onInstrumentPressed()`（切换 striked 贴图）→ `onInstrumentReleased()`（恢复 unstriked + `Wallet::earn()`）→ 功德飘字动画 + 刷新 HUD
@@ -242,12 +242,12 @@
 | `door_glow.png` | 建筑门口 hover 光芒 | 用户上传，1:3 竖向，已压缩至 256×384 |
 | `basic_muyu_unstriked.png` | 基础木鱼未敲击 | 云上法器 |
 | `basic_muyu_striked.png` | 基础木鱼敲击 | 云上法器 |
-| `turbo_muyu_unstriked.jpg` | 涡轮木鱼未敲击 | 占位图（红色） |
-| `turbo_muyu_striked.jpg` | 涡轮木鱼敲击 | 占位图（深红） |
+| `turbo_muyu_unstriked.png` | 涡轮木鱼未敲击 | 占位图（红色） |
+| `turbo_muyu_striked.png` | 涡轮木鱼敲击 | 占位图（深红） |
 | `quantum_beads_unstriked.png` | 量子佛珠未敲击 | 占位图（紫色） |
 | `quantum_beads_striked.png` | 量子佛珠敲击 | 占位图（深紫） |
-| `electronic_incense.jpg` | 电子烧香 / 基础烧香（临时） | 占位图（橙色），莲台法器 |
-| `ai_chanting.jpg` | AI 诵经机 | 占位图（蓝色），莲台法器 |
+| `electronic_incense.png` | 电子烧香 / 基础烧香（临时） | 占位图（橙色），莲台法器 |
+| `ai_chanting.png` | AI 诵经机 | 占位图（蓝色），莲台法器 |
 
 ---
 
