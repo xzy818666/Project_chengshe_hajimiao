@@ -760,6 +760,14 @@ static QString lotusImagePath(Instrument::Type type)
         return ":/images/electronic_incense.png";
     case Instrument::AIChantingMachine:
         return ":/images/ai_chanting.png";
+    case Instrument::Cassock:
+        return ":/images/cassock.png";
+    case Instrument::Compass:
+        return ":/images/compass.png";
+    case Instrument::Fuchen:
+        return ":/images/fuchen.png";
+    case Instrument::Ruyi:
+        return ":/images/ruyi.png";
     default:
         return "";
     }

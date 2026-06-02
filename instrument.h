@@ -12,7 +12,12 @@ public:
         ElectronicIncense,
         TurboWoodenFish,
         QuantumPrayerBeads,
-        AIChantingMachine
+        AIChantingMachine,
+        Cassock,
+        Compass,
+        Fuchen,
+        Ruyi,
+        AllSeeingEye
     };
 
     Instrument(Type type = BasicWoodenFish);

@@ -12,9 +12,15 @@
         <file>images/turbo_muyu_striked.png</file>
         <file>images/quantum_beads_unstriked.png</file>
         <file>images/quantum_beads_striked.png</file>
+        <file>images/AllSeeingEye_closed.png</file>
+        <file>images/AllSeeingEye_open.png</file>
         <file>images/basic_joss_stick.png</file>
         <file>images/electronic_incense.png</file>
         <file>images/ai_chanting.png</file>
+        <file>images/cassock.png</file>
+        <file>images/compass.png</file>
+        <file>images/fuchen.png</file>
+        <file>images/ruyi.png</file>
         <file>images/door_glow.png</file>
         <file>images/radiance.png</file>
     </qresource>

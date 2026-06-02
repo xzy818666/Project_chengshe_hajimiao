@@ -7,7 +7,7 @@ GameConfig configForDifficulty(GameDifficulty diff)
 {
     switch (diff) {
     case GameDifficulty::Easy:
-        return {2000.0, 2000.0, 0.005, 600.0, 3.0, 0.15};
+        return {100000.0, 100000.0, 0.005, 600.0, 3.0, 0.15};
     case GameDifficulty::Hard:
         return {500.0, 500.0, 0.02, 300.0, 1.5, 0.25};
     default:

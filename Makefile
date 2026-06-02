@@ -1009,6 +1009,7 @@ compiler_rcc_clean:
 	-$(DEL_FILE) qrc_resources.cpp
 qrc_resources.cpp: resources.qrc \
 		../../Qt/6.11.0/macos/libexec/rcc \
+		images/AllSeeingEye_open.png \
 		images/main_background.jpg \
 		images/turbo_muyu_unstriked.png \
 		images/radiance.png \
@@ -1018,11 +1019,16 @@ qrc_resources.cpp: resources.qrc \
 		images/instrument_shop.png \
 		images/basic_muyu_striked.png \
 		images/quantum_beads_unstriked.png \
+		images/cassock.png \
 		images/achievement_hall.jpeg \
 		images/basic_muyu_unstriked.png \
 		images/door_glow.png \
 		images/merit_bank.png \
+		images/compass.png \
+		images/ruyi.png \
 		images/ai_chanting.png \
+		images/AllSeeingEye_closed.png \
+		images/fuchen.png \
 		images/quantum_beads_striked.png \
 		images/electronic_incense.png \
 		images/basic_joss_stick.png

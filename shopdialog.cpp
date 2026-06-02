@@ -35,8 +35,12 @@ ShopDialog::ShopDialog(QWidget *parent)
     setPalette(palette);
     setAutoFillBackground(true);
 
-    // 基础木鱼默认已拥有且已装备
+    // 基础木鱼及新增辅助法器默认已拥有
     m_ownedTypes.insert((int)Instrument::BasicWoodenFish);
+    m_ownedTypes.insert((int)Instrument::Cassock);
+    m_ownedTypes.insert((int)Instrument::Compass);
+    m_ownedTypes.insert((int)Instrument::Fuchen);
+    m_ownedTypes.insert((int)Instrument::Ruyi);
 
     setupUI();
     updateBottomPanel();
@@ -63,7 +67,8 @@ void ShopDialog::setupUI()
     QList<Instrument::Type> cloudTypes = {
         Instrument::BasicWoodenFish,
         Instrument::TurboWoodenFish,
-        Instrument::QuantumPrayerBeads
+        Instrument::QuantumPrayerBeads,
+        Instrument::AllSeeingEye
     };
     for (Instrument::Type type : cloudTypes) {
         QLabel* label = new QLabel(this);
@@ -78,7 +83,11 @@ void ShopDialog::setupUI()
     QList<Instrument::Type> lotusTypes = {
         Instrument::BasicIncense,
         Instrument::ElectronicIncense,
-        Instrument::AIChantingMachine
+        Instrument::AIChantingMachine,
+        Instrument::Cassock,
+        Instrument::Compass,
+        Instrument::Fuchen,
+        Instrument::Ruyi
     };
     for (Instrument::Type type : lotusTypes) {
         QLabel* label = new QLabel(this);
@@ -179,13 +188,21 @@ void ShopDialog::updateLayout()
     int w = width();
     int h = height();
 
-    // 缩略图大小（根据窗口自适应）
-    int thumbSize = qMin(100, qMin(w / 10, h / 8));
+    // 基于原图 1672×941 的缩放比例
+    double sx = w / 1672.0;
+    double sy = h / 941.0;
+    int thumbSize = qMin(120, static_cast<int>(qMin(130 * sx, 130 * sy)));
 
-    // 左柜子（主动法器）：放在左柜子中间列，垂直均匀分布
+    // 左柜子坐标（原图绝对像素）
+    static const int LEFT_COLS[3] = {125, 270, 420};
+    static const int ROWS[3] = {333, 473, 610};
+
+    // 左柜子（主动法器）：3 个按列优先放在第一列
     for (int i = 0; i < m_leftThumbs.size(); ++i) {
-        int x = qRound(w * 0.17) - thumbSize / 2;
-        int y = qRound(h * (0.30 + i * 0.18)) - thumbSize / 2;
+        int col = i % 3;
+        int row = i / 3;
+        int x = qRound(LEFT_COLS[col] * sx) - thumbSize / 2;
+        int y = qRound(ROWS[row] * sy) - thumbSize / 2;
         m_leftThumbs[i].label->setGeometry(x, y, thumbSize, thumbSize);
         QPixmap pix(thumbPath(m_leftThumbs[i].type));
         if (!pix.isNull()) {
@@ -193,10 +210,15 @@ void ShopDialog::updateLayout()
         }
     }
 
-    // 右柜子（辅助法器）
+    // 右柜子坐标（原图绝对像素）
+    static const int RIGHT_COLS[3] = {1250, 1400, 1550};
+
+    // 右柜子（辅助法器）：7 个按列优先填满
     for (int i = 0; i < m_rightThumbs.size(); ++i) {
-        int x = qRound(w * 0.83) - thumbSize / 2;
-        int y = qRound(h * (0.30 + i * 0.18)) - thumbSize / 2;
+        int col = i / 3;
+        int row = i % 3;
+        int x = qRound(RIGHT_COLS[col] * sx) - thumbSize / 2;
+        int y = qRound(ROWS[row] * sy) - thumbSize / 2;
         m_rightThumbs[i].label->setGeometry(x, y, thumbSize, thumbSize);
         QPixmap pix(thumbPath(m_rightThumbs[i].type));
         if (!pix.isNull()) {
@@ -302,6 +324,21 @@ void ShopDialog::updateBottomPanel()
     case Instrument::AIChantingMachine:
         desc = "AI 诵经机。辅助法器，自动收益 +10/秒，但每秒需 1 功德维护费，算法普度众生。";
         break;
+    case Instrument::Cassock:
+        desc = "袈裟。佛门法衣，披之可获加持，辅助法器。";
+        break;
+    case Instrument::Compass:
+        desc = "罗盘。风水定方位，辅助法器。";
+        break;
+    case Instrument::Fuchen:
+        desc = "拂尘。扫除烦恼尘垢，辅助法器。";
+        break;
+    case Instrument::Ruyi:
+        desc = "如意。万事如意，辅助法器。";
+        break;
+    case Instrument::AllSeeingEye:
+        desc = "全视之眼。每击 +3 功德，5% 概率触发五倍暴击，洞察因果。";
+        break;
     default:
         desc = "";
     }
@@ -334,6 +371,11 @@ QString ShopDialog::thumbPath(Instrument::Type type) const
     case Instrument::BasicIncense:       return ":/images/basic_joss_stick.png";
     case Instrument::ElectronicIncense:  return ":/images/electronic_incense.png";
     case Instrument::AIChantingMachine:  return ":/images/ai_chanting.png";
+    case Instrument::Cassock:            return ":/images/cassock.png";
+    case Instrument::Compass:            return ":/images/compass.png";
+    case Instrument::Fuchen:             return ":/images/fuchen.png";
+    case Instrument::Ruyi:               return ":/images/ruyi.png";
+    case Instrument::AllSeeingEye:       return ":/images/AllSeeingEye_closed.png";
     default: return "";
     }
 }
@@ -347,6 +389,11 @@ QString ShopDialog::fullPath(Instrument::Type type) const
     case Instrument::BasicIncense:       return ":/images/basic_joss_stick.png";
     case Instrument::ElectronicIncense:  return ":/images/electronic_incense.png";
     case Instrument::AIChantingMachine:  return ":/images/ai_chanting.png";
+    case Instrument::Cassock:            return ":/images/cassock.png";
+    case Instrument::Compass:            return ":/images/compass.png";
+    case Instrument::Fuchen:             return ":/images/fuchen.png";
+    case Instrument::Ruyi:               return ":/images/ruyi.png";
+    case Instrument::AllSeeingEye:       return ":/images/AllSeeingEye_closed.png";
     default: return "";
     }
 }
