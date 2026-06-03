@@ -1013,6 +1013,7 @@ qrc_resources.cpp: resources.qrc \
 		images/main_background.jpg \
 		images/turbo_muyu_unstriked.png \
 		images/radiance.png \
+		images/cloud_frame.png \
 		images/turbo_muyu_striked.png \
 		images/stock_exchange.png \
 		images/modified_main_background_new.jpeg \
@@ -1344,7 +1345,10 @@ bankdialog.o: bankdialog.cpp bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		ui_bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMessageBox \
-		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QTableWidgetItem
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QTableWidgetItem \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRandomGenerator
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bankdialog.o bankdialog.cpp
 
 exchangedialog.o: exchangedialog.cpp exchangedialog.h \
@@ -1360,6 +1364,8 @@ exchangedialog.o: exchangedialog.cpp exchangedialog.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
 		ui_exchangedialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMessageBox \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
 		portfolioadvisor.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
 		arbitragescanner.h \

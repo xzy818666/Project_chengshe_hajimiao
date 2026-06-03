@@ -2,6 +2,9 @@
 #include "ui_bankdialog.h"
 #include <QMessageBox>
 #include <QTableWidgetItem>
+#include <QLabel>
+#include <QTimer>
+#include <QRandomGenerator>
 
 const double BankDialog::FIXED_RATE_7DAY = 0.06;
 const double BankDialog::FIXED_RATE_30DAY = 0.08;
@@ -11,6 +14,9 @@ BankDialog::BankDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::BankDialog)
     , m_wallet(nullptr)
+    , m_cloudFrame(nullptr)
+    , m_beastText(nullptr)
+    , m_talkTimer(nullptr)
 {
     ui->setupUi(this);
     setWindowTitle("善财司");
@@ -66,6 +72,8 @@ BankDialog::BankDialog(QWidget *parent)
     connect(ui->confessBtn, &QPushButton::clicked, this, &BankDialog::onConfess);
     connect(ui->addMarginBtn, &QPushButton::clicked, this, &BankDialog::onAddMargin);
     connect(ui->closeAllLeverageBtn, &QPushButton::clicked, this, &BankDialog::onCloseAllLeverage);
+
+    setupBeastTalk();
 }
 
 BankDialog::~BankDialog()
@@ -94,7 +102,16 @@ void BankDialog::onDepositSavings()
 {
     if (!m_wallet) return;
     double amount = ui->savingsAmount->value();
-    m_wallet->addSavings(amount);
+    if (amount <= 0) {
+        showBeastTalk("invalid", false);
+        return;
+    }
+    if (m_wallet->merit() >= amount) {
+        m_wallet->addSavings(amount);
+        showBeastTalk("deposit_savings", true);
+    } else {
+        showBeastTalk("deposit_savings", false);
+    }
     updateInfo();
 }
 
@@ -102,7 +119,8 @@ void BankDialog::onWithdrawSavings()
 {
     if (!m_wallet) return;
     double amount = ui->savingsAmount->value();
-    m_wallet->withdrawSavings(amount);
+    bool ok = m_wallet->withdrawSavings(amount);
+    showBeastTalk("withdraw_savings", ok);
     updateInfo();
 }
 
@@ -112,8 +130,11 @@ void BankDialog::onBuyFixedDeposit(int days, double rate)
     double amount = ui->fdAmount->value();
     QString id = m_wallet->addFixedDeposit(amount, days, rate);
     if (!id.isEmpty()) {
+        showBeastTalk("buy_fixed", true);
         updateFixedDeposits();
         updateInfo();
+    } else {
+        showBeastTalk("buy_fixed", false);
     }
 }
 
@@ -124,8 +145,11 @@ void BankDialog::onWithdrawFixedDeposit()
     if (item) {
         QString id = item->data(Qt::UserRole).toString();
         m_wallet->withdrawFixedDeposit(id);
+        showBeastTalk("withdraw_fixed", true);
         updateFixedDeposits();
         updateInfo();
+    } else {
+        showBeastTalk("withdraw_fixed", false);
     }
 }
 
@@ -133,7 +157,8 @@ void BankDialog::onBorrow()
 {
     if (!m_wallet) return;
     double amount = ui->borrowAmount->value();
-    m_wallet->borrow(amount);
+    bool ok = m_wallet->borrow(amount);
+    showBeastTalk("borrow", ok);
     updateInfo();
 }
 
@@ -141,7 +166,8 @@ void BankDialog::onRepay()
 {
     if (!m_wallet) return;
     double amount = ui->repayAmount->value();
-    m_wallet->repay(amount);
+    bool ok = m_wallet->repay(amount);
+    showBeastTalk("repay", ok);
     updateInfo();
 }
 
@@ -149,7 +175,12 @@ void BankDialog::onConfess()
 {
     if (!m_wallet) return;
     double amount = ui->confessAmount->value();
-    m_wallet->reduceYezhang(amount);
+    if (amount > 0 && m_wallet->merit() >= amount) {
+        m_wallet->reduceYezhang(amount);
+        showBeastTalk("confess", true);
+    } else {
+        showBeastTalk("confess", false);
+    }
     updateInfo();
 }
 
@@ -158,20 +189,24 @@ void BankDialog::onAddMargin()
     if (!m_wallet) return;
     int row = ui->leverageTable->currentRow();
     if (row < 0) {
+        showBeastTalk("add_margin", false);
         QMessageBox::information(this, "提示", "请先选中一条杠杆持仓");
         return;
     }
     QString assetId = ui->leverageTable->item(row, 0)->data(Qt::UserRole).toString();
     double amount = ui->savingsAmount->value(); // 复用活期金额输入框
     if (amount <= 0) {
+        showBeastTalk("add_margin", false);
         QMessageBox::information(this, "提示", "请输入有效的追加金额");
         return;
     }
     if (m_wallet->addMarginToPosition(assetId, amount)) {
+        showBeastTalk("add_margin", true);
         updateLeverageTable();
         updateInfo();
         QMessageBox::information(this, "追加成功", "保证金已追加");
     } else {
+        showBeastTalk("add_margin", false);
         QMessageBox::information(this, "追加失败", "功德不足或无该持仓");
     }
 }
@@ -181,6 +216,7 @@ void BankDialog::onCloseAllLeverage()
     if (!m_wallet) return;
     auto positions = m_wallet->leveragePositions();
     if (positions.isEmpty()) {
+        showBeastTalk("close_leverage", false);
         QMessageBox::information(this, "提示", "当前没有杠杆持仓");
         return;
     }
@@ -199,6 +235,7 @@ void BankDialog::onCloseAllLeverage()
             closed++;
         }
     }
+    showBeastTalk("close_leverage", closed > 0);
     updateLeverageTable();
     updateInfo();
     QMessageBox::information(this, "平仓完成", QString("已平仓 %1 条杠杆持仓").arg(closed));
@@ -331,4 +368,112 @@ void BankDialog::updateLeverageTable()
         ui->leverageTable->setItem(row, 4, new QTableWidgetItem(rateText));
         row++;
     }
+}
+
+void BankDialog::setupBeastTalk()
+{
+    double sx = width() / 960.0;
+    double sy = height() / 540.0;
+    // 以原右上角 (520,150) 为基准，等比例缩至 2/3 后再稍微放大：240×96
+    int cw = qRound(240 * sx);
+    int ch = qRound(96 * sy);
+    // 使用独立工具窗，彻底摆脱与 tabWidget 的 z-order 竞争
+    m_cloudFrame = new QWidget(this, Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowDoesNotAcceptFocus);
+    m_cloudFrame->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_cloudFrame->setAttribute(Qt::WA_ShowWithoutActivating);
+    m_cloudFrame->setAttribute(Qt::WA_TranslucentBackground);
+    m_cloudFrame->setFixedSize(cw, ch);
+    m_cloudFrame->setAutoFillBackground(false);
+    m_cloudFrame->hide();
+
+    QLabel* bgLabel = new QLabel(m_cloudFrame);
+    bgLabel->setGeometry(0, 0, cw, ch);
+    QPixmap cloud(":/images/cloud_frame.png");
+    if (!cloud.isNull()) {
+        bgLabel->setPixmap(cloud.scaled(cw, ch, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    }
+    bgLabel->setScaledContents(false);
+
+    m_beastText = new QLabel(m_cloudFrame);
+    m_beastText->setGeometry(0, 0, cw, ch);
+    m_beastText->setAlignment(Qt::AlignCenter);
+    m_beastText->setWordWrap(true);
+    m_beastText->setStyleSheet(
+        "QLabel {"
+        "  color: #773b15;"
+        "  font-size: 13px;"
+        "  font-weight: bold;"
+        "  background: transparent;"
+        "}"
+    );
+
+    m_talkTimer = new QTimer(this);
+    m_talkTimer->setSingleShot(true);
+    connect(m_talkTimer, &QTimer::timeout, this, [this]() {
+        if (m_cloudFrame) m_cloudFrame->hide();
+    });
+}
+
+void BankDialog::showBeastTalk(const QString& actionType, bool success)
+{
+    if (!m_cloudFrame || !m_beastText) return;
+
+    QStringList list;
+    if (actionType == "deposit_savings") {
+        list = success
+            ? QStringList{"功德入库，利滚利来，善哉善哉。", "积少成多，聚沙成塔，此乃理财之根本。", "存下的不仅是功德，更是来世的底气。"}
+            : QStringList{"施主，袋中功德不足，莫要强求。", "巧妇难为无米之炊，先去赚些功德吧。"};
+    } else if (actionType == "withdraw_savings") {
+        list = success
+            ? QStringList{"取之于库，用之于道，量力而行。", "功德虽可取，莫忘留后路。", "细水长流，切忌涸泽而渔。"}
+            : QStringList{"活期余额见底，施主请三思。", "库中空无一物，拿什么给你？"};
+    } else if (actionType == "buy_fixed") {
+        list = success
+            ? QStringList{"以时间换空间，此乃大智慧。", "锁住功德，静待花开，稳如泰山。", "定期如闭关，到期即出关。"}
+            : QStringList{"功德不足，闭关失败，先去化缘吧。", "囊中羞涩，何以定期？"};
+    } else if (actionType == "withdraw_fixed") {
+        list = success
+            ? QStringList{"提前出关，功德折损，望施主三思。", "破了定力，少了利息，奈何奈何。", "因果未到，强行摘果，味道稍涩。"}
+            : QStringList{"并无定期可取，施主莫要空欢喜。", "选中一条定期，方可提前支取。"};
+    } else if (actionType == "borrow") {
+        list = success
+            ? QStringList{"借功德如借东风，用得好可助火势，用不好引火烧身。", "天行健，君子以自强不息；借功德，施主须量力而行。", "债务缠身，业障亦随之而来，慎之慎之。"}
+            : QStringList{"信用额度已满，天道也不允你再借了。", "施主负债累累，先还清旧账再说吧。"};
+    } else if (actionType == "repay") {
+        list = success
+            ? QStringList{"无债一身轻，功德圆满时。", "还一份债，清一分因果，善莫大焉。", "昔日借东风，今日还甘霖，此乃诚信之道。"}
+            : QStringList{"功德不足以还债，巧妇难为无米之炊。", "口袋空空，如何还债？先去赚功德吧。"};
+    } else if (actionType == "confess") {
+        list = success
+            ? QStringList{"放下屠刀，立地成佛。消一分业障，增一分清明。", "知错能改，善莫大焉。业障消散，功德自来。", "忏悔如洗涤，心净则佛土净。"}
+            : QStringList{"功德不够，无法忏悔。心诚则灵，财到则清。", "想要消业障，也得有功德做燃料啊。"};
+    } else if (actionType == "add_margin") {
+        list = success
+            ? QStringList{"追加功德，稳住阵脚，悬崖勒马未为晚。", "雪中送炭，功德护体，此缘还可续。", "加一分保证金，多一分生机，施主英明。"}
+            : QStringList{"功德不足，无法追加。命里有时终须有，命里无时莫强求。", "口袋比脸还干净，拿什么追加？"};
+    } else if (actionType == "close_leverage") {
+        list = success
+            ? QStringList{"舍得舍得，有舍才有得。平仓即是重生。", "断臂求生，亦是智慧。留得青山在，不怕没柴烧。", "昔日杠杆如梦幻泡影，今日平仓得大自在。"}
+            : QStringList{"本无杠杆，谈何平仓？施主多虑了。", "空仓如也，无仓可平，不如去幻缘所看看。"};
+    } else {
+        list = QStringList{"神兽打了个盹，什么也没说。"};
+    }
+
+    if (!list.isEmpty()) {
+        int idx = QRandomGenerator::global()->bounded(list.size());
+        m_beastText->setText(list[idx]);
+    }
+
+    // 将 BankDialog 客户区坐标转为全局屏幕坐标（神兽头旁，以右上角为基准）
+    double sx = width() / 960.0;
+    double sy = height() / 540.0;
+    int cw = qRound(240 * sx);
+    int cx = qRound(500 * sx) - cw;
+    int cy = qRound(136 * sy);
+    QPoint globalPos = mapToGlobal(QPoint(cx, cy));
+    m_cloudFrame->move(globalPos);
+
+    m_cloudFrame->show();
+    m_cloudFrame->raise();
+    m_talkTimer->start(3500);
 }

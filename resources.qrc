@@ -23,6 +23,7 @@
         <file>images/ruyi.png</file>
         <file>images/door_glow.png</file>
         <file>images/radiance.png</file>
+        <file>images/cloud_frame.png</file>
     </qresource>
     <qresource prefix="/images"/>
 </RCC>

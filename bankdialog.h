@@ -9,6 +9,9 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class BankDialog; }
 QT_END_NAMESPACE
 
+class QLabel;
+class QTimer;
+
 class BankDialog : public QDialog
 {
     Q_OBJECT
@@ -42,6 +45,14 @@ private:
     static const double FIXED_RATE_7DAY;
     static const double FIXED_RATE_30DAY;
     static const double FIXED_RATE_90DAY;
+
+    // 神兽话语系统
+    QWidget* m_cloudFrame;
+    QLabel* m_beastText;
+    QTimer* m_talkTimer;
+
+    void setupBeastTalk();
+    void showBeastTalk(const QString& actionType, bool success);
 };
 
 #endif // BANKDIALOG_H

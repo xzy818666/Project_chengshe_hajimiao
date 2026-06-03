@@ -2,6 +2,8 @@
 #include "ui_exchangedialog.h"
 #include <QDateTime>
 #include <QMessageBox>
+#include <QLabel>
+#include <QVBoxLayout>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QChart>
 #include <QtCharts/QPieSeries>
@@ -311,14 +313,67 @@ void ExchangeDialog::setWallet(Wallet* wallet)
     m_wallet = wallet;
 }
 
+static QWidget* createAssetItemWidget(Asset* asset)
+{
+    QWidget* row = new QWidget();
+    row->setAutoFillBackground(false);
+    row->setAttribute(Qt::WA_TransparentForMouseEvents);
+    QVBoxLayout* layout = new QVBoxLayout(row);
+    layout->setContentsMargins(10, 6, 10, 6);
+    layout->setSpacing(3);
+
+    QLabel* nameLabel = new QLabel(asset->name());
+    nameLabel->setStyleSheet("font-weight: bold; font-size: 15px; color: #1A0F08;");
+
+    QString abstract;
+    QString specs;
+    if (asset->id() == "merit_index") {
+        abstract = QStringLiteral("诸行无常，缘起性空。大千世界，众生共业，潮起潮落，皆为我缘。");
+        specs = QStringLiteral("风险：中等 | 漂移：0.02 | 波动：0.15 | 初始价：100");
+    } else if (asset->id() == "karma_bond") {
+        abstract = QStringLiteral("积善之家，必有余庆。不求功德无量，但求灵台安宁。");
+        specs = QStringLiteral("风险：低 | 价格锚定：1.0 | 年化收益：4%（按秒结息）");
+    } else if (asset->id() == "dharma_fund") {
+        abstract = QStringLiteral("诸法因缘生，诸法因缘灭。左手托众生，右手抚私德，对冲于冥冥之中。");
+        specs = QStringLiteral("风险：中低 | 初始价：100 | 合成：60%众生法缘+40%善行福缘+噪声");
+    } else if (asset->id() == "samsara_futures") {
+        abstract = QStringLiteral("一念天堂，一念地狱。携两倍因果业火，于无常涅槃重生，赌尽前世来生。");
+        specs = QStringLiteral("风险：高 | 初始价：100 | 自带2×杠杆 | 维持率<30%强制平仓 | 亏损先扣下世功德");
+    } else {
+        abstract = QStringLiteral("未知资产");
+        specs = QStringLiteral("—");
+    }
+
+    QLabel* descLabel = new QLabel(abstract);
+    descLabel->setStyleSheet("font-size: 11px; color: #5D4037;");
+    descLabel->setWordWrap(true);
+
+    QLabel* specLabel = new QLabel(specs);
+    specLabel->setStyleSheet("font-size: 10px; color: #6D4C41;");
+    specLabel->setWordWrap(true);
+
+    layout->addWidget(nameLabel);
+    layout->addWidget(descLabel);
+    layout->addWidget(specLabel);
+    layout->addStretch();
+
+    return row;
+}
+
 void ExchangeDialog::setAssets(QList<Asset*> assets)
 {
     m_assets = assets;
     ui->assetList->clear();
+
+    int listH = ui->assetList->height();
+    int itemH = listH / qMax(1, assets.size());
+
     for (Asset* asset : assets) {
-        QListWidgetItem* item = new QListWidgetItem(asset->name());
+        QListWidgetItem* item = new QListWidgetItem();
         item->setData(Qt::UserRole, QVariant::fromValue((void*)asset));
+        item->setSizeHint(QSize(ui->assetList->viewport()->width(), itemH));
         ui->assetList->addItem(item);
+        ui->assetList->setItemWidget(item, createAssetItemWidget(asset));
     }
     if (!assets.isEmpty()) {
         onAssetSelected(0);
