@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QTimer>
 #include <QRandomGenerator>
+#include <QPushButton>
 
 const double BankDialog::FIXED_RATE_7DAY = 0.06;
 const double BankDialog::FIXED_RATE_30DAY = 0.08;
@@ -74,6 +75,25 @@ BankDialog::BankDialog(QWidget *parent)
     connect(ui->closeAllLeverageBtn, &QPushButton::clicked, this, &BankDialog::onCloseAllLeverage);
 
     setupBeastTalk();
+
+    QPushButton* backBtn = new QPushButton("返回", this);
+    backBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: rgba(139, 90, 43, 0.85);"
+        "  color: #FFF8E7;"
+        "  border: 1px solid rgba(100, 60, 20, 0.7);"
+        "  border-radius: 6px;"
+        "  padding: 4px 12px;"
+        "  font-weight: bold;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(160, 110, 55, 0.95);"
+        "}"
+    );
+    backBtn->setGeometry(width() - 90, 10, 70, 32);
+    backBtn->setCursor(Qt::PointingHandCursor);
+    backBtn->raise();
+    connect(backBtn, &QPushButton::clicked, this, &BankDialog::accept);
 }
 
 BankDialog::~BankDialog()

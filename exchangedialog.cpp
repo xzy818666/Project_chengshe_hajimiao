@@ -4,6 +4,8 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QPushButton>
+#include <QTimer>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QChart>
 #include <QtCharts/QPieSeries>
@@ -32,25 +34,27 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("幻缘所");
 
-    // 将 1674x940 的 UI 缩放到 1600x900（与功德堂主窗口一致）
-    const double sx = 1600.0 / 1674.0;
-    const double sy = 900.0 / 940.0;
+    // 适配主界面实际尺寸（默认回退 1600×900）
+    QSize sz = parent ? parent->size() : QSize(1600, 900);
+    resize(sz.width(), sz.height());
+    setMinimumSize(800, 450);
+
+    // 将 1674x940 的 UI 缩放到当前窗口尺寸
+    const double sx = sz.width() / 1674.0;
+    const double sy = sz.height() / 940.0;
     for (QWidget* w : findChildren<QWidget*>()) {
         QRect g = w->geometry();
         w->setGeometry(qRound(g.x() * sx), qRound(g.y() * sy),
                        qRound(g.width() * sx), qRound(g.height() * sy));
     }
 
-    // 背景图 scaled 到 1600x900
+    // 背景图按当前窗口尺寸缩放
     QPixmap bg(":/images/stock_exchange.png");
-    bg = bg.scaled(1600, 900, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    bg = bg.scaled(sz.width(), sz.height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Window, QBrush(bg));
     this->setPalette(palette);
     this->setAutoFillBackground(true);
-
-    resize(1600, 900);
-    setMinimumSize(800, 450);
 
     // ---- 控件古风样式 ----
     // 列表：完全透明背景 + 深色文字，直接融入背景面板
@@ -301,11 +305,75 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
 
     // 默认显示交易模式
     setTradingMode(true);
+
+    QPushButton* backBtn = new QPushButton("返回", this);
+    backBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: rgba(139, 90, 43, 0.85);"
+        "  color: #FFF8E7;"
+        "  border: 1px solid rgba(100, 60, 20, 0.7);"
+        "  border-radius: 6px;"
+        "  padding: 4px 12px;"
+        "  font-weight: bold;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(160, 110, 55, 0.95);"
+        "}"
+    );
+    backBtn->setGeometry(sz.width() - 90, 10, 70, 32);
+    backBtn->setCursor(Qt::PointingHandCursor);
+    backBtn->raise();
+    connect(backBtn, &QPushButton::clicked, this, &ExchangeDialog::accept);
+
+    // 保存基准布局，用于后续 resize 重排
+    m_baseSize = size();
+    for (QWidget* w : findChildren<QWidget*>()) {
+        if (w == this) continue;
+        QWidget* p = w->parentWidget();
+        if (p == this || p == ui->detailWidget || p == ui->portfolioRightWidget) {
+            m_baseGeometries[w] = w->geometry();
+        }
+    }
+    updateLayout();
 }
 
 ExchangeDialog::~ExchangeDialog()
 {
     delete ui;
+}
+
+void ExchangeDialog::resizeEvent(QResizeEvent *event)
+{
+    QDialog::resizeEvent(event);
+    // 强制保持 16:9 比例，以宽度为准
+    int w = width();
+    int expectedH = w * 9 / 16;
+    if (height() != expectedH) {
+        QTimer::singleShot(0, this, [this, w]() { resize(w, w * 9 / 16); });
+        return;
+    }
+
+    // 重新设置背景图，避免平铺
+    QPixmap bg(":/images/stock_exchange.png");
+    QPalette palette = this->palette();
+    palette.setBrush(QPalette::Window, bg.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    setPalette(palette);
+
+    updateLayout();
+}
+
+void ExchangeDialog::updateLayout()
+{
+    if (m_baseGeometries.isEmpty()) return;
+    double sx = width() / static_cast<double>(m_baseSize.width());
+    double sy = height() / static_cast<double>(m_baseSize.height());
+
+    for (auto it = m_baseGeometries.cbegin(); it != m_baseGeometries.cend(); ++it) {
+        QWidget* w = it.key();
+        const QRect& base = it.value();
+        w->setGeometry(qRound(base.x() * sx), qRound(base.y() * sy),
+                       qRound(base.width() * sx), qRound(base.height() * sy));
+    }
 }
 
 void ExchangeDialog::setWallet(Wallet* wallet)
