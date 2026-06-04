@@ -2,6 +2,9 @@
 #define EXCHANGEDIALOG_H
 
 #include <QDialog>
+#include <QMap>
+#include <QRegularExpression>
+#include <QResizeEvent>
 #include <QtCharts>
 #include "wallet.h"
 #include "asset.h"
@@ -42,7 +45,11 @@ private slots:
     void onAutoInvestToggled(bool checked);
     void onAutoInvestSettingsChanged();
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
+    void updateLayout();
     Ui::ExchangeDialog *ui;
     Wallet* m_wallet;
     QList<Asset*> m_assets;
@@ -73,6 +80,12 @@ private:
     QString getPortfolioRiskRating();
 
     double m_maxLeverage = 1.0;
+
+    QSize m_baseSize;
+    QMap<QWidget*, QRect> m_baseGeometries;
+    QMap<QWidget*, int> m_baseFontSizes;
+
+    void scaleFonts(double scale);
 };
 
 #endif // EXCHANGEDIALOG_H

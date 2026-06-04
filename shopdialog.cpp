@@ -44,6 +44,25 @@ ShopDialog::ShopDialog(QWidget *parent)
 
     setupUI();
     updateBottomPanel();
+
+    QPushButton* backBtn = new QPushButton("返回", this);
+    backBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: rgba(139, 90, 43, 0.85);"
+        "  color: #FFF8E7;"
+        "  border: 1px solid rgba(100, 60, 20, 0.7);"
+        "  border-radius: 6px;"
+        "  padding: 4px 12px;"
+        "  font-weight: bold;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(160, 110, 55, 0.95);"
+        "}"
+    );
+    backBtn->setGeometry(width() - 90, 10, 70, 32);
+    backBtn->setCursor(Qt::PointingHandCursor);
+    backBtn->raise();
+    connect(backBtn, &QPushButton::clicked, this, &ShopDialog::accept);
 }
 
 ShopDialog::~ShopDialog()

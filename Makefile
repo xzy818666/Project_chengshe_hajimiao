@@ -1115,10 +1115,12 @@ moc_bankdialog.cpp: bankdialog.h \
 
 moc_exchangedialog.cpp: exchangedialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRegularExpression \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QResizeEvent \
 		../../Qt/6.11.0/macos/lib/QtCharts.framework/Headers/QtCharts \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
-		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
@@ -1319,6 +1321,8 @@ merithall.o: merithall.cpp merithall.h \
 		bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
 		exchangedialog.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRegularExpression \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QResizeEvent \
 		../../Qt/6.11.0/macos/lib/QtCharts.framework/Headers/QtCharts \
 		shopdialog.h \
 		achievementdialog.h \
@@ -1348,15 +1352,18 @@ bankdialog.o: bankdialog.cpp bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QTableWidgetItem \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
-		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRandomGenerator
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRandomGenerator \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o bankdialog.o bankdialog.cpp
 
 exchangedialog.o: exchangedialog.cpp exchangedialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRegularExpression \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QResizeEvent \
 		../../Qt/6.11.0/macos/lib/QtCharts.framework/Headers/QtCharts \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
-		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
@@ -1366,6 +1373,8 @@ exchangedialog.o: exchangedialog.cpp exchangedialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMessageBox \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
 		portfolioadvisor.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
 		arbitragescanner.h \
@@ -1414,7 +1423,8 @@ achievementdialog.o: achievementdialog.cpp achievementdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QGridLayout \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPalette \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPixmap \
-		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QBrush
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QBrush \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o achievementdialog.o achievementdialog.cpp
 
 portfolioadvisor.o: portfolioadvisor.cpp portfolioadvisor.h \
