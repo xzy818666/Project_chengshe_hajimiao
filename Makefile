@@ -1116,6 +1116,7 @@ moc_bankdialog.cpp: bankdialog.h \
 moc_exchangedialog.cpp: exchangedialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRegularExpression \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QResizeEvent \
 		../../Qt/6.11.0/macos/lib/QtCharts.framework/Headers/QtCharts \
 		wallet.h \
@@ -1320,6 +1321,7 @@ merithall.o: merithall.cpp merithall.h \
 		bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
 		exchangedialog.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRegularExpression \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QResizeEvent \
 		../../Qt/6.11.0/macos/lib/QtCharts.framework/Headers/QtCharts \
 		shopdialog.h \
@@ -1357,6 +1359,7 @@ bankdialog.o: bankdialog.cpp bankdialog.h \
 exchangedialog.o: exchangedialog.cpp exchangedialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRegularExpression \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QResizeEvent \
 		../../Qt/6.11.0/macos/lib/QtCharts.framework/Headers/QtCharts \
 		wallet.h \

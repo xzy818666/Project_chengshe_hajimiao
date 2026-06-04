@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QTimer>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QChart>
@@ -333,6 +334,19 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
         if (p == this || p == ui->detailWidget || p == ui->portfolioRightWidget) {
             m_baseGeometries[w] = w->geometry();
         }
+
+        // 保存字体基准（styleSheet px 或 QFont pt/px）
+        QFont f = w->font();
+        QString ss = w->styleSheet();
+        QRegularExpression re("font-size:\\s*(\\d+)px");
+        QRegularExpressionMatch match = re.match(ss);
+        if (match.hasMatch()) {
+            m_baseFontSizes[w] = match.captured(1).toInt();
+        } else if (f.pointSizeF() > 0) {
+            m_baseFontSizes[w] = f.pointSizeF();
+        } else if (f.pixelSize() > 0) {
+            m_baseFontSizes[w] = f.pixelSize();
+        }
     }
     updateLayout();
 }
@@ -373,6 +387,35 @@ void ExchangeDialog::updateLayout()
         const QRect& base = it.value();
         w->setGeometry(qRound(base.x() * sx), qRound(base.y() * sy),
                        qRound(base.width() * sx), qRound(base.height() * sy));
+    }
+
+    scaleFonts((sx + sy) / 2.0);
+}
+
+void ExchangeDialog::scaleFonts(double scale)
+{
+    for (auto it = m_baseFontSizes.cbegin(); it != m_baseFontSizes.cend(); ++it) {
+        QWidget* w = it.key();
+        int baseSize = it.value();
+        int newSize = qMax(1, qRound(baseSize * scale));
+
+        QString ss = w->styleSheet();
+        QRegularExpression re("font-size:\\s*\\d+px");
+        QRegularExpressionMatch match = re.match(ss);
+        if (match.hasMatch()) {
+            QString newSs = ss.left(match.capturedStart())
+                          + QString("font-size: %1px").arg(newSize)
+                          + ss.mid(match.capturedEnd());
+            w->setStyleSheet(newSs);
+        } else {
+            QFont f = w->font();
+            if (f.pointSizeF() > 0) {
+                f.setPointSizeF(newSize);
+            } else if (f.pixelSize() > 0) {
+                f.setPixelSize(newSize);
+            }
+            w->setFont(f);
+        }
     }
 }
 
