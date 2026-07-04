@@ -8,6 +8,7 @@
 #include <QFrame>
 #include <QTimer>
 #include <QPropertyAnimation>
+#include <QProgressBar>
 #include "wallet.h"
 #include "instrument.h"
 #include "asset.h"
@@ -18,6 +19,7 @@ namespace Ui { class MeritHall; }
 QT_END_NAMESPACE
 
 #include "achievementmanager.h"
+#include "instrumentresonance.h"
 
 class MeritHall : public QMainWindow
 {
@@ -63,6 +65,7 @@ private:
     Instrument m_cloudInstrument;              // 主动法器（云上）
     QList<Instrument> m_lotusInstruments;      // 辅助法器（莲台）
     QList<QLabel*> m_lotusLabels;
+    QMap<Instrument::Type, int> m_lotusDurations; // 辅助法器剩余秒数（烧香倒计时）
     QList<Asset*> m_assets;
     MarketEvent* m_marketEvent;
     QTimer* m_updateTimer;
@@ -99,6 +102,23 @@ private:
     void updateFishClickAreaPosition(QPushButton *btn);
     void setupEventPopup();
     void showEventPopup(const QString& text);
+
+    // 辅助法器加成计算
+    double totalLotusClickBonus() const;
+    double totalLotusCritBonus() const;
+    double totalLotusEfficiencyBonus() const;
+    void updateLotusDurations(); // 每秒更新烧香倒计时并移除到期法器
+
+    // 法器组合共鸣
+    InstrumentResonance* m_resonance;
+    void updateResonance();
+    void showResonancePopup(const QString& name, const QString& desc);
+
+    // 修炼等级显示
+    QLabel* m_cultivationLabel = nullptr;  // 等级/称号
+    QProgressBar* m_expBar = nullptr;      // 经验条
+    void setupCultivationDisplay();
+    void updateCultivationDisplay();
 
     QPushButton *pavilionBankBtn;
     QPushButton *pavilionExchangeBtn;

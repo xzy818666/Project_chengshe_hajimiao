@@ -53,6 +53,7 @@ private:
 
     void setupBeastTalk();
     void showBeastTalk(const QString& actionType, bool success);
+    void showToast(const QString& title, const QString& message, const QString& type = "info");
 };
 
 #endif // BANKDIALOG_H

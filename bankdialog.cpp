@@ -1,6 +1,7 @@
 #include "bankdialog.h"
 #include "ui_bankdialog.h"
 #include <QMessageBox>
+#include <QFrame>
 #include <QTableWidgetItem>
 #include <QLabel>
 #include <QTimer>
@@ -76,21 +77,24 @@ BankDialog::BankDialog(QWidget *parent)
 
     setupBeastTalk();
 
-    QPushButton* backBtn = new QPushButton("返回", this);
+    QPushButton* backBtn = new QPushButton("⟵ 返回", this);
     backBtn->setStyleSheet(
         "QPushButton {"
-        "  background-color: rgba(139, 90, 43, 0.85);"
-        "  color: #FFF8E7;"
-        "  border: 1px solid rgba(100, 60, 20, 0.7);"
-        "  border-radius: 6px;"
-        "  padding: 4px 12px;"
+        "  background-color: rgba(93, 64, 55, 0.88);"
+        "  color: #FFD700;"
+        "  border: 2px solid rgba(255, 215, 0, 0.6);"
+        "  border-radius: 8px;"
+        "  padding: 6px 16px;"
         "  font-weight: bold;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 14px;"
         "}"
         "QPushButton:hover {"
-        "  background-color: rgba(160, 110, 55, 0.95);"
+        "  background-color: rgba(255, 215, 0, 0.85);"
+        "  color: #3E2723;"
         "}"
     );
-    backBtn->setGeometry(width() - 90, 10, 70, 32);
+    backBtn->setGeometry(width() - 110, 14, 90, 36);
     backBtn->setCursor(Qt::PointingHandCursor);
     backBtn->raise();
     connect(backBtn, &QPushButton::clicked, this, &BankDialog::accept);
@@ -187,6 +191,9 @@ void BankDialog::onRepay()
     if (!m_wallet) return;
     double amount = ui->repayAmount->value();
     bool ok = m_wallet->repay(amount);
+    if (ok && m_wallet->creditRating()) {
+        m_wallet->creditRating()->recordRepayment(true);
+    }
     showBeastTalk("repay", ok);
     updateInfo();
 }
@@ -210,24 +217,24 @@ void BankDialog::onAddMargin()
     int row = ui->leverageTable->currentRow();
     if (row < 0) {
         showBeastTalk("add_margin", false);
-        QMessageBox::information(this, "提示", "请先选中一条杠杆持仓");
+        showToast("提示", "请先选中一条杠杆持仓", "info");
         return;
     }
     QString assetId = ui->leverageTable->item(row, 0)->data(Qt::UserRole).toString();
     double amount = ui->savingsAmount->value(); // 复用活期金额输入框
     if (amount <= 0) {
         showBeastTalk("add_margin", false);
-        QMessageBox::information(this, "提示", "请输入有效的追加金额");
+        showToast("提示", "请输入有效的追加金额", "info");
         return;
     }
     if (m_wallet->addMarginToPosition(assetId, amount)) {
         showBeastTalk("add_margin", true);
         updateLeverageTable();
         updateInfo();
-        QMessageBox::information(this, "追加成功", "保证金已追加");
+        showToast("追加成功", "保证金已追加", "success");
     } else {
         showBeastTalk("add_margin", false);
-        QMessageBox::information(this, "追加失败", "功德不足或无该持仓");
+        showToast("追加失败", "功德不足或无该持仓", "error");
     }
 }
 
@@ -237,7 +244,7 @@ void BankDialog::onCloseAllLeverage()
     auto positions = m_wallet->leveragePositions();
     if (positions.isEmpty()) {
         showBeastTalk("close_leverage", false);
-        QMessageBox::information(this, "提示", "当前没有杠杆持仓");
+        showToast("提示", "当前没有杠杆持仓", "info");
         return;
     }
 
@@ -258,7 +265,7 @@ void BankDialog::onCloseAllLeverage()
     showBeastTalk("close_leverage", closed > 0);
     updateLeverageTable();
     updateInfo();
-    QMessageBox::information(this, "平仓完成", QString("已平仓 %1 条杠杆持仓").arg(closed));
+    showToast("平仓完成", QString("已平仓 %1 条杠杆持仓").arg(closed), "success");
 }
 
 void BankDialog::updateInfo()
@@ -288,6 +295,17 @@ void BankDialog::updateInfo()
     }
 
     ui->maxBorrow->setText(QString("可借额度: %1 功德").arg(m_wallet->maxBorrow(), 0, 'f', 2));
+
+    // 信用等级显示
+    if (m_wallet->creditRating()) {
+        QString grade = m_wallet->creditRating()->gradeText();
+        double rateMult = m_wallet->creditRating()->loanRateMultiplier();
+        double levMult = m_wallet->creditRating()->maxLeverageMultiplier();
+        ui->creditScore->setText(
+            QString("信用分: %1 / 1000  [等级: %2]  利率倍率: %3×  杠杆倍率: %4×")
+                .arg(score).arg(grade).arg(rateMult, 0, 'f', 1).arg(levMult, 0, 'f', 1)
+        );
+    }
 
     double yz = m_wallet->yezhang();
     ui->yezhangValue->setText(QString("业障值: %1 / 2000").arg(yz, 0, 'f', 0));
@@ -496,4 +514,90 @@ void BankDialog::showBeastTalk(const QString& actionType, bool success)
     m_cloudFrame->show();
     m_cloudFrame->raise();
     m_talkTimer->start(3500);
+}
+
+
+// 统一古风通知弹窗
+void BankDialog::showToast(const QString& title, const QString& message, const QString& type)
+{
+    QDialog dialog(this, Qt::Dialog | Qt::FramelessWindowHint);
+    dialog.setAttribute(Qt::WA_TranslucentBackground);
+    dialog.setFixedSize(400, 220);
+
+    QString borderColor, titleColor, bgColor;
+    if (type == "success") {
+        borderColor = "rgba(80, 160, 80, 0.8)";
+        titleColor = "#81C784";
+        bgColor = "rgba(15, 30, 15, 0.95)";
+    } else if (type == "error") {
+        borderColor = "rgba(200, 80, 80, 0.8)";
+        titleColor = "#FF8A80";
+        bgColor = "rgba(30, 15, 15, 0.95)";
+    } else {
+        borderColor = "rgba(200, 160, 80, 0.7)";
+        titleColor = "#FFD700";
+        bgColor = "rgba(25, 20, 15, 0.95)";
+    }
+
+    QWidget *mask = new QWidget(&dialog);
+    mask->setGeometry(0, 0, 400, 220);
+    mask->setStyleSheet(
+        QString("QWidget {"
+                "  background-color: %1;"
+                "  border: 3px solid %2;"
+                "  border-radius: 16px;"
+                "}").arg(bgColor).arg(borderColor)
+    );
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    layout->setSpacing(12);
+    layout->setAlignment(Qt::AlignCenter);
+    layout->setContentsMargins(24, 20, 24, 20);
+
+    QLabel *titleLabel = new QLabel(title, &dialog);
+    titleLabel->setStyleSheet(
+        QString("font-size: 20px; font-weight: bold; color: %1;"
+                "font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;").arg(titleColor)
+    );
+    titleLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(titleLabel);
+
+    QFrame *line = new QFrame(&dialog);
+    line->setFrameShape(QFrame::HLine);
+    line->setStyleSheet(QString("color: %1;").arg(borderColor));
+    line->setFixedHeight(2);
+    layout->addWidget(line);
+
+    QLabel *msgLabel = new QLabel(message, &dialog);
+    msgLabel->setStyleSheet(
+        "font-size: 14px; color: #F5F5DC;"
+        "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+    );
+    msgLabel->setAlignment(Qt::AlignCenter);
+    msgLabel->setWordWrap(true);
+    layout->addWidget(msgLabel);
+
+    QPushButton *okBtn = new QPushButton("知道了", &dialog);
+    okBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: rgba(93, 64, 55, 0.88);"
+        "  color: #FFD700;"
+        "  border: 2px solid rgba(200, 160, 80, 0.7);"
+        "  border-radius: 10px;"
+        "  padding: 8px 24px;"
+        "  font-weight: bold;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 14px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(200, 160, 80, 0.85);"
+        "  color: #3E2723;"
+        "}"
+    );
+    okBtn->setCursor(Qt::PointingHandCursor);
+    layout->addWidget(okBtn, 0, Qt::AlignCenter);
+
+    connect(okBtn, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+    dialog.exec();
 }

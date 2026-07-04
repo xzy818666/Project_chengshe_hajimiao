@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QMap>
 #include <QDateTime>
+#include "cultivationlevel.h"
+#include "creditrating.h"
 
 class Wallet : public QObject
 {
@@ -99,6 +101,18 @@ signals:
     void repaid(double amount);
     void leverageChanged();
 
+    // 修炼与信用等级信号
+    void cultivationLevelUp(int level, QString title);
+    void creditGradeChanged(QString grade);
+
+public:
+    // 修炼等级
+    CultivationLevel* cultivationLevel() const;
+    void addCultivationExp(int amount);
+
+    // 信用等级
+    CreditRating* creditRating() const;
+
 private:
     double m_merit;
     double m_savings;
@@ -108,6 +122,9 @@ private:
     double m_dailyInflationRate;
     double m_nextLifeMeritPool;
     double m_nextLifeLoss;
+
+    CultivationLevel* m_cultivationLevel;
+    CreditRating* m_creditRating;
 
     QMap<QString, double> m_assets;
     QMap<QString, double> m_assetCostBasis;

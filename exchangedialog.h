@@ -78,6 +78,7 @@ private:
     QString riskLevelToString(Asset::RiskLevel level);
     void setTradingMode(bool trading);
     QString getPortfolioRiskRating();
+    void showToast(const QString& title, const QString& message, const QString& type = "info");
 
     double m_maxLeverage = 1.0;
 

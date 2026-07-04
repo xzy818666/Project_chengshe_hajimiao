@@ -35,31 +35,30 @@ ShopDialog::ShopDialog(QWidget *parent)
     setPalette(palette);
     setAutoFillBackground(true);
 
-    // 基础木鱼及新增辅助法器默认已拥有
+    // 基础木鱼默认已拥有，其余后加辅助法器需购买
     m_ownedTypes.insert((int)Instrument::BasicWoodenFish);
-    m_ownedTypes.insert((int)Instrument::Cassock);
-    m_ownedTypes.insert((int)Instrument::Compass);
-    m_ownedTypes.insert((int)Instrument::Fuchen);
-    m_ownedTypes.insert((int)Instrument::Ruyi);
 
     setupUI();
     updateBottomPanel();
 
-    QPushButton* backBtn = new QPushButton("返回", this);
+    QPushButton* backBtn = new QPushButton("⟵ 返回", this);
     backBtn->setStyleSheet(
         "QPushButton {"
-        "  background-color: rgba(139, 90, 43, 0.85);"
-        "  color: #FFF8E7;"
-        "  border: 1px solid rgba(100, 60, 20, 0.7);"
-        "  border-radius: 6px;"
-        "  padding: 4px 12px;"
+        "  background-color: rgba(93, 64, 55, 0.88);"
+        "  color: #FFD700;"
+        "  border: 2px solid rgba(255, 215, 0, 0.6);"
+        "  border-radius: 8px;"
+        "  padding: 6px 16px;"
         "  font-weight: bold;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 14px;"
         "}"
         "QPushButton:hover {"
-        "  background-color: rgba(160, 110, 55, 0.95);"
+        "  background-color: rgba(255, 215, 0, 0.85);"
+        "  color: #3E2723;"
         "}"
     );
-    backBtn->setGeometry(width() - 90, 10, 70, 32);
+    backBtn->setGeometry(width() - 110, 14, 90, 36);
     backBtn->setCursor(Qt::PointingHandCursor);
     backBtn->raise();
     connect(backBtn, &QPushButton::clicked, this, &ShopDialog::accept);
@@ -133,57 +132,75 @@ void ShopDialog::setupUI()
     m_bottomPanel = new QWidget(this);
     m_bottomPanel->setStyleSheet(
         "QWidget {"
-        "  background-color: rgba(60, 40, 20, 0.88);"
-        "  border: 2px solid rgba(200, 160, 80, 0.6);"
-        "  border-radius: 12px;"
+        "  background-color: rgba(35, 25, 15, 0.92);"
+        "  border: 2px solid rgba(200, 160, 80, 0.65);"
+        "  border-radius: 14px;"
         "}"
     );
     QVBoxLayout* panelLayout = new QVBoxLayout(m_bottomPanel);
-    panelLayout->setSpacing(6);
-    panelLayout->setContentsMargins(20, 12, 20, 12);
+    panelLayout->setSpacing(8);
+    panelLayout->setContentsMargins(24, 14, 24, 14);
 
     m_nameLabel = new QLabel(m_bottomPanel);
-    m_nameLabel->setStyleSheet("color: #FFD700; font-size: 22px; font-weight: bold;");
+    m_nameLabel->setStyleSheet(
+        "color: #FFD700; font-size: 24px; font-weight: bold;"
+        "font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+    );
     panelLayout->addWidget(m_nameLabel);
 
     m_descLabel = new QLabel(m_bottomPanel);
-    m_descLabel->setStyleSheet("color: #F5F5DC; font-size: 14px;");
+    m_descLabel->setStyleSheet(
+        "color: #F5F5DC; font-size: 14px;"
+        "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+    );
     m_descLabel->setWordWrap(true);
     panelLayout->addWidget(m_descLabel);
 
     m_priceLabel = new QLabel(m_bottomPanel);
-    m_priceLabel->setStyleSheet("color: #FFA500; font-size: 14px;");
+    m_priceLabel->setStyleSheet(
+        "color: #FFA500; font-size: 15px; font-weight: bold;"
+        "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+    );
     panelLayout->addWidget(m_priceLabel);
 
     QHBoxLayout* btnLayout = new QHBoxLayout();
     m_buyBtn = new QPushButton("购买", m_bottomPanel);
     m_buyBtn->setStyleSheet(
         "QPushButton {"
-        "  background-color: #8B4513;"
-        "  color: #FFF8E7;"
+        "  background-color: #5D4037;"
+        "  color: #FFD700;"
         "  font-weight: bold;"
-        "  padding: 8px 24px;"
-        "  border-radius: 6px;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 15px;"
+        "  padding: 10px 32px;"
+        "  border: 2px solid #FFD700;"
+        "  border-radius: 10px;"
         "}"
         "QPushButton:hover {"
-        "  background-color: #A0522D;"
+        "  background-color: #FFD700;"
+        "  color: #3E2723;"
         "}"
         "QPushButton:disabled {"
-        "  background-color: #555555;"
-        "  color: #AAAAAA;"
+        "  background-color: #4A4A4A;"
+        "  color: #888888;"
+        "  border: 2px solid #666666;"
         "}"
     );
     m_equipBtn = new QPushButton("装备", m_bottomPanel);
     m_equipBtn->setStyleSheet(
         "QPushButton {"
-        "  background-color: #2E7D32;"
-        "  color: white;"
+        "  background-color: #2E4D33;"
+        "  color: #FFF8E7;"
         "  font-weight: bold;"
-        "  padding: 8px 24px;"
-        "  border-radius: 6px;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 15px;"
+        "  padding: 10px 32px;"
+        "  border: 2px solid #81C784;"
+        "  border-radius: 10px;"
         "}"
         "QPushButton:hover {"
-        "  background-color: #388E3C;"
+        "  background-color: #81C784;"
+        "  color: #1B331F;"
         "}"
     );
     btnLayout->addStretch();
@@ -344,16 +361,16 @@ void ShopDialog::updateBottomPanel()
         desc = "AI 诵经机。辅助法器，自动收益 +10/秒，但每秒需 1 功德维护费，算法普度众生。";
         break;
     case Instrument::Cassock:
-        desc = "袈裟。佛门法衣，披之可获加持，辅助法器。";
+        desc = "袈裟。佛门法衣，辅助法器，效率系数 +10%，佛光普照。";
         break;
     case Instrument::Compass:
-        desc = "罗盘。风水定方位，辅助法器。";
+        desc = "罗盘。风水定方位，辅助法器，自动收益 +0.3/秒，指引财运。";
         break;
     case Instrument::Fuchen:
-        desc = "拂尘。扫除烦恼尘垢，辅助法器。";
+        desc = "拂尘。扫除烦恼尘垢，辅助法器，点击收益 +0.5/击，清净心明。";
         break;
     case Instrument::Ruyi:
-        desc = "如意。万事如意，辅助法器。";
+        desc = "如意。万事如意，辅助法器，暴击概率 +5%，心想事成。";
         break;
     case Instrument::AllSeeingEye:
         desc = "全视之眼。每击 +3 功德，5% 概率触发五倍暴击，洞察因果。";

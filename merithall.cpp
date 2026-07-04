@@ -15,11 +15,13 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QWidget>
+#include <QFrame>
 #include <QMessageBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
 #include <QGraphicsDropShadowEffect>
+#include <QProgressBar>
 
 MeritHall::MeritHall(QWidget *parent)
     : QMainWindow(parent)
@@ -30,6 +32,7 @@ MeritHall::MeritHall(QWidget *parent)
     , m_autoIncomePerSec(0)
     , m_currentDate(2026, 1, 1)
     , m_dayTickCounter(0)
+    , m_resonance(new InstrumentResonance(this))
 {
     ui->setupUi(this);
     setWindowTitle("赛博功德银行 - 功德堂");
@@ -123,6 +126,11 @@ MeritHall::MeritHall(QWidget *parent)
     createEndSamsaraButton();
 
     setupEventPopup();
+    setupCultivationDisplay();
+
+    // 连接共鸣信号
+    connect(m_resonance, &InstrumentResonance::resonanceActivated,
+            this, &MeritHall::showResonancePopup);
 
     connect(ui->bankBtn, &QPushButton::clicked, this, &MeritHall::onBankClicked);
     connect(ui->exchangeBtn, &QPushButton::clicked, this, &MeritHall::onExchangeClicked);
@@ -274,17 +282,57 @@ void MeritHall::onInstrumentClicked()
     if (!m_wallet) return;
 
     m_clickCount++;
-    double reward = m_cloudInstrument.clickReward();
-    double efficiency = m_wallet->efficiency();
-    double actualReward = reward * efficiency;
+    double reward = m_cloudInstrument.clickReward() + totalLotusClickBonus();
+    double efficiency = m_wallet->efficiency() + totalLotusEfficiencyBonus();
+
+    // 修炼等级效率加成
+    if (m_wallet->cultivationLevel()) {
+        efficiency += m_wallet->cultivationLevel()->efficiencyBonus();
+    }
+    // 法器共鸣效率加成
+    if (m_resonance) {
+        efficiency += m_resonance->totalEfficiencyBonus();
+    }
+    efficiency = qMin(efficiency, 2.0); // 效率上限提升至 200%
+
+    // 法器共鸣点击倍率
+    double clickMult = 1.0;
+    if (m_resonance) {
+        clickMult = m_resonance->totalClickMultiplier();
+    }
+    double actualReward = reward * efficiency * clickMult;
     bool isCrit = false;
 
-    if (m_cloudInstrument.hasCrit() && (rand() / (double)RAND_MAX) < m_cloudInstrument.critChance()) {
-        actualReward *= 10;
-        isCrit = true;
+    double totalCritChance = m_cloudInstrument.critChance() + totalLotusCritBonus();
+    // 修炼等级暴击率加成
+    if (m_wallet->cultivationLevel()) {
+        totalCritChance += m_wallet->cultivationLevel()->critRateBonus();
+    }
+    // 法器共鸣暴击率加成
+    if (m_resonance) {
+        totalCritChance += m_resonance->totalCritRateBonus();
+    }
+    if (totalCritChance > 0 && (rand() / (double)RAND_MAX) < totalCritChance) {
+        int multiplier = m_cloudInstrument.critMultiplier();
+        // 法器共鸣暴击倍数加成
+        if (m_resonance) {
+            multiplier += m_resonance->totalCritMultiplierBonus();
+        }
+        if (multiplier > 1) {
+            actualReward *= multiplier;
+            isCrit = true;
+        }
     }
 
     m_wallet->earn(actualReward);
+
+    // 获取修炼经验：基础1点，暴击额外5点
+    int expGain = 1;
+    if (isCrit) expGain += 5;
+    m_wallet->addCultivationExp(expGain);
+
+    // 更新法器组合共鸣
+    updateResonance();
 
     // 浮动数字动画（移到点击收益计算后，显示实际数值）
     QLabel *rewardLabel = new QLabel(this);
@@ -375,6 +423,9 @@ void MeritHall::updateAutoIncome()
         updateDateDisplay();
     }
 
+    // 更新烧香法器倒计时
+    updateLotusDurations();
+
     // 累加所有辅助法器的自动收益与维护费
     double totalAutoReward = 0.0;
     double totalMaintenance = 0.0;
@@ -382,6 +433,19 @@ void MeritHall::updateAutoIncome()
         totalAutoReward += inst.autoReward();
         totalMaintenance += inst.maintenanceCost();
     }
+
+    // 法器组合共鸣加成
+    if (m_resonance) {
+        totalAutoReward += m_resonance->totalAutoIncomeBonus();
+    }
+
+    // 修炼等级自动收益加成
+    double cultivationBonus = 1.0;
+    if (m_wallet->cultivationLevel()) {
+        cultivationBonus += m_wallet->cultivationLevel()->autoIncomeBonus();
+    }
+    totalAutoReward *= cultivationBonus;
+
     double netIncome = totalAutoReward - totalMaintenance;
 
     if (netIncome > 0) {
@@ -390,6 +454,16 @@ void MeritHall::updateAutoIncome()
     } else if (totalMaintenance > 0 && m_wallet->merit() >= totalMaintenance) {
         m_wallet->spend(totalMaintenance);
         m_autoIncomePerSec = -totalMaintenance;
+    }
+
+    // 每日记录信用活跃度（每 30 秒 tick 一次，约每天一次）
+    if (m_dayTickCounter == 0 && m_wallet->creditRating()) {
+        m_wallet->creditRating()->recordDailyActivity();
+    }
+
+    // 业障影响信用等级
+    if (m_wallet->creditRating()) {
+        m_wallet->creditRating()->recordYezhangImpact(static_cast<int>(m_wallet->yezhang()));
     }
 
     updateHUD();
@@ -423,7 +497,7 @@ void MeritHall::updateHUD()
     ui->clickCountLabel->setStyleSheet("color: #E0E0E0; font-size: 13px;");
     ui->autoIncomeLabel->setText(QString("自动收益: %1/秒").arg(m_autoIncomePerSec, 0, 'f', 1));
     ui->autoIncomeLabel->setStyleSheet("color: #E0E0E0; font-size: 13px;");
-    ui->efficiencyLabel->setText(QString("效率系数: %1%").arg(m_wallet->efficiency() * 100, 0, 'f', 1));
+    ui->efficiencyLabel->setText(QString("效率系数: %1%").arg((m_wallet->efficiency() + totalLotusEfficiencyBonus()) * 100, 0, 'f', 1));
     ui->efficiencyLabel->setStyleSheet("color: #E0E0E0; font-size: 13px;");
     ui->inflationLabel->setText(QString("通胀: %1%/日").arg(m_wallet->dailyInflationRate() * 100, 0, 'f', 2));
     if (m_wallet->dailyInflationRate() > 0.02) {
@@ -462,6 +536,25 @@ void MeritHall::updateHUD()
         m_achievementManager->checkHoldings(m_wallet->assets());
         m_achievementManager->checkPortfolioLoss(m_wallet->assets(), prices);
     }
+
+    // 更新修炼等级显示
+    updateCultivationDisplay();
+
+    // 更新共鸣显示（在 HUD 中显示当前共鸣）
+    QLabel *resonanceLabel = findChild<QLabel*>("resonanceLabel");
+    if (!resonanceLabel) {
+        resonanceLabel = new QLabel(this);
+        resonanceLabel->setObjectName("resonanceLabel");
+        resonanceLabel->setStyleSheet(
+            "color: #E1BEE7; font-size: 13px; font-weight: bold;"
+            "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+        );
+        resonanceLabel->setAlignment(Qt::AlignCenter);
+        ui->rightHudLayout->addWidget(resonanceLabel, 3, 0, 1, 2);
+    }
+    if (m_resonance) {
+        resonanceLabel->setText(m_resonance->getActiveResonanceText());
+    }
 }
 
 void MeritHall::updateDateDisplay()
@@ -471,6 +564,11 @@ void MeritHall::updateDateDisplay()
 
 void MeritHall::updateMarketEvent()
 {
+    // 传递业障值给市场事件系统
+    if (m_marketEvent && m_wallet) {
+        m_marketEvent->setYezhang(m_wallet->yezhang());
+    }
+
     QString eventText;
     bool hasEvent = false;
 
@@ -527,12 +625,16 @@ void MeritHall::onShopClicked()
         for (int i = 0; i < m_lotusInstruments.size(); ++i) {
             if (m_lotusInstruments[i].type() == instrument.type()) {
                 m_lotusInstruments.removeAt(i);
+                m_lotusDurations.remove(instrument.type());
                 found = true;
                 break;
             }
         }
         if (!found) {
             m_lotusInstruments.append(instrument);
+            if (instrument.duration() > 0) {
+                m_lotusDurations[instrument.type()] = instrument.duration();
+            }
         }
         updateLotusInstrumentDisplay();
     });
@@ -919,19 +1021,40 @@ void MeritHall::showGameOverDialog()
 {
     if (!m_wallet) return;
 
-    QDialog dialog(this);
-    dialog.setWindowTitle("轮回结算");
-    dialog.setFixedSize(400, 300);
-    dialog.setStyleSheet("background-color: #2D2D2D; color: #E0E0E0;");
+    QDialog dialog(this, Qt::Dialog | Qt::FramelessWindowHint);
+    dialog.setAttribute(Qt::WA_TranslucentBackground);
+    dialog.setFixedSize(480, 380);
+
+    // 创建遮罩层
+    QWidget *mask = new QWidget(&dialog);
+    mask->setGeometry(0, 0, 480, 380);
+    mask->setStyleSheet(
+        "QWidget {"
+        "  background-color: rgba(20, 15, 10, 0.94);"
+        "  border: 3px solid rgba(200, 160, 80, 0.8);"
+        "  border-radius: 18px;"
+        "}"
+    );
 
     QVBoxLayout *layout = new QVBoxLayout(&dialog);
-    layout->setSpacing(12);
+    layout->setSpacing(14);
     layout->setAlignment(Qt::AlignCenter);
+    layout->setContentsMargins(30, 24, 30, 24);
 
     QLabel *title = new QLabel("☸ 本轮轮回已结束 ☸", &dialog);
-    title->setStyleSheet("font-size: 22px; font-weight: bold; color: #FFD700;");
+    title->setStyleSheet(
+        "font-size: 26px; font-weight: bold; color: #FFD700;"
+        "font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+    );
     title->setAlignment(Qt::AlignCenter);
     layout->addWidget(title);
+
+    // 分隔线
+    QFrame *line = new QFrame(&dialog);
+    line->setFrameShape(QFrame::HLine);
+    line->setStyleSheet("color: rgba(200, 160, 80, 0.5);");
+    line->setFixedHeight(2);
+    layout->addWidget(line);
 
     double assetValue = 0;
     for (Asset* asset : m_assets) {
@@ -940,48 +1063,89 @@ void MeritHall::showGameOverDialog()
     double netWorth = m_wallet->merit() + assetValue + m_wallet->savingsBalance() - m_wallet->totalDebt();
 
     QLabel *netWorthLabel = new QLabel(QString("最终净资产: %1 功德").arg(netWorth, 0, 'f', 2), &dialog);
-    netWorthLabel->setStyleSheet("font-size: 16px; color: #4FC3F7;");
+    netWorthLabel->setStyleSheet(
+        "font-size: 18px; color: #4FC3F7;"
+        "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+    );
     netWorthLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(netWorthLabel);
 
     QLabel *nextLifeLabel = new QLabel(QString("下世功德消耗: %1").arg(m_wallet->nextLifeLoss(), 0, 'f', 2), &dialog);
-    nextLifeLabel->setStyleSheet("font-size: 16px; color: #FF8C00;");
+    nextLifeLabel->setStyleSheet(
+        "font-size: 16px; color: #FF8C00;"
+        "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+    );
     nextLifeLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(nextLifeLabel);
 
     QLabel *yezhangLabel = new QLabel(QString("业障值: %1").arg(m_wallet->yezhang(), 0, 'f', 0), &dialog);
-    yezhangLabel->setStyleSheet("font-size: 16px; color: #EF5350;");
+    yezhangLabel->setStyleSheet(
+        "font-size: 16px; color: #EF5350;"
+        "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+    );
     yezhangLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(yezhangLabel);
 
     if (m_wallet->nextLifeLoss() > 0) {
         QLabel *flavor = new QLabel("\"上辈子造了什么孽...\"", &dialog);
-        flavor->setStyleSheet("font-size: 13px; color: #B0B0B0; font-style: italic;");
+        flavor->setStyleSheet(
+            "font-size: 14px; color: #9E9E9E; font-style: italic;"
+            "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+        );
         flavor->setAlignment(Qt::AlignCenter);
         layout->addWidget(flavor);
     }
 
-    // 自动存档，避免用户忘记点击
+    layout->addSpacing(10);
+
+    // 自动存档
     bool autoSaved = SaveManager::saveFinal(m_wallet->nextLifeLoss(), m_wallet->yezhang(), "");
 
-    QDialogButtonBox *buttons = new QDialogButtonBox(&dialog);
-    QPushButton *saveBtn = buttons->addButton(autoSaved ? "已自动存档 ✓" : "存档失败 ✗", QDialogButtonBox::ActionRole);
-    QPushButton *exitBtn = buttons->addButton("退出", QDialogButtonBox::AcceptRole);
+    QHBoxLayout *btnLayout = new QHBoxLayout();
+    btnLayout->setSpacing(16);
+    btnLayout->addStretch();
 
+    QPushButton *saveBtn = new QPushButton(autoSaved ? "已自动存档 ✓" : "存档失败 ✗", &dialog);
     saveBtn->setEnabled(false);
     saveBtn->setStyleSheet(
-        "QPushButton { background-color: #5D4037; color: #FFD700; border: 1px solid #FFD700; padding: 6px 16px; }"
+        "QPushButton {"
+        "  background-color: #4A3B2A;"
+        "  color: #FFD700;"
+        "  border: 1px solid #FFD700;"
+        "  border-radius: 8px;"
+        "  padding: 8px 20px;"
+        "  font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 14px;"
+        "}"
     );
+
+    QPushButton *exitBtn = new QPushButton("退出轮回", &dialog);
     exitBtn->setStyleSheet(
-        "QPushButton { background-color: #424242; color: #E0E0E0; border: 1px solid #757575; padding: 6px 16px; }"
+        "QPushButton {"
+        "  background-color: #5D4037;"
+        "  color: #FFD700;"
+        "  border: 2px solid #FFD700;"
+        "  border-radius: 8px;"
+        "  padding: 8px 28px;"
+        "  font-weight: bold;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 15px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #FFD700;"
+        "  color: #3E2723;"
+        "}"
     );
+    exitBtn->setCursor(Qt::PointingHandCursor);
+
+    btnLayout->addWidget(saveBtn);
+    btnLayout->addWidget(exitBtn);
+    btnLayout->addStretch();
+    layout->addLayout(btnLayout);
 
     connect(exitBtn, &QPushButton::clicked, &dialog, &QDialog::accept);
 
-    layout->addWidget(buttons);
     dialog.exec();
-
-    // 结算后关闭主窗口
     close();
 }
 
@@ -1018,6 +1182,11 @@ void MeritHall::checkSamsaraLiquidation()
         m_wallet->removeAsset("samsara_futures", shares);
         m_wallet->clearCostBasis("samsara_futures");
 
+        // 爆仓降低信用等级
+        if (m_wallet->creditRating()) {
+            m_wallet->creditRating()->recordLeverageLiquidation();
+        }
+
         showLiquidationAlert(loss);
         updateHUD();
     }
@@ -1025,21 +1194,74 @@ void MeritHall::checkSamsaraLiquidation()
 
 void MeritHall::showLiquidationAlert(double loss)
 {
-    QString msg = QString("⚠ 轮回孽缘已爆仓！\n"
-                          "强制平仓亏损: %1 功德\n"
-                          "其中 %2 从下世功德扣除，"
-                          "剩余 %3 计入当世债务。")
-                      .arg(loss, 0, 'f', 2)
-                      .arg(qMin(loss, m_wallet ? m_wallet->nextLifeMeritPool() + loss : 0.0), 0, 'f', 2)
-                      .arg(qMax(0.0, loss - (m_wallet ? m_wallet->nextLifeMeritPool() : 0.0)), 0, 'f', 2);
+    QDialog dialog(this, Qt::Dialog | Qt::FramelessWindowHint);
+    dialog.setAttribute(Qt::WA_TranslucentBackground);
+    dialog.setFixedSize(420, 240);
 
-    // 修正：applySamsaraLoss 已经扣除了池子，所以这里不能直接读 nextLifeMeritPool
-    // 简化消息
-    QMessageBox::warning(this, "爆仓警告",
+    QWidget *mask = new QWidget(&dialog);
+    mask->setGeometry(0, 0, 420, 240);
+    mask->setStyleSheet(
+        "QWidget {"
+        "  background-color: rgba(25, 10, 10, 0.95);"
+        "  border: 3px solid rgba(200, 50, 50, 0.8);"
+        "  border-radius: 16px;"
+        "}"
+    );
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    layout->setSpacing(12);
+    layout->setAlignment(Qt::AlignCenter);
+    layout->setContentsMargins(24, 20, 24, 20);
+
+    QLabel *title = new QLabel("⚠ 爆仓警告 ⚠", &dialog);
+    title->setStyleSheet(
+        "font-size: 24px; font-weight: bold; color: #FF5252;"
+        "font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+    );
+    title->setAlignment(Qt::AlignCenter);
+    layout->addWidget(title);
+
+    QFrame *line = new QFrame(&dialog);
+    line->setFrameShape(QFrame::HLine);
+    line->setStyleSheet("color: rgba(200, 50, 50, 0.5);");
+    line->setFixedHeight(2);
+    layout->addWidget(line);
+
+    QLabel *msgLabel = new QLabel(
         QString("轮回孽缘维持率跌破 30%，已强制平仓！\n"
                 "本次亏损: %1 功德\n"
                 "优先从下世功德扣除，不足部分计入债务。")
-            .arg(loss, 0, 'f', 2));
+            .arg(loss, 0, 'f', 2), &dialog);
+    msgLabel->setStyleSheet(
+        "font-size: 15px; color: #F5F5DC;"
+        "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+    );
+    msgLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(msgLabel);
+
+    QPushButton *okBtn = new QPushButton("阿弥陀佛", &dialog);
+    okBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: #7A1F1F;"
+        "  color: #FFFFFF;"
+        "  border: 2px solid #FF5252;"
+        "  border-radius: 10px;"
+        "  padding: 8px 28px;"
+        "  font-weight: bold;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 15px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #FF5252;"
+        "  color: #1A1A1A;"
+        "}"
+    );
+    okBtn->setCursor(Qt::PointingHandCursor);
+    layout->addWidget(okBtn, 0, Qt::AlignCenter);
+
+    connect(okBtn, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+    dialog.exec();
 }
 
 void MeritHall::checkLeverageMargin()
@@ -1072,4 +1294,144 @@ void MeritHall::checkLeverageMargin()
             }
         }
     }
+}
+
+// --- 辅助法器加成与倒计时管理 ---
+
+double MeritHall::totalLotusClickBonus() const
+{
+    double bonus = 0.0;
+    for (const Instrument& inst : m_lotusInstruments) {
+        bonus += inst.clickBonus();
+    }
+    return bonus;
+}
+
+double MeritHall::totalLotusCritBonus() const
+{
+    double bonus = 0.0;
+    for (const Instrument& inst : m_lotusInstruments) {
+        bonus += inst.critBonus();
+    }
+    return bonus;
+}
+
+double MeritHall::totalLotusEfficiencyBonus() const
+{
+    double bonus = 0.0;
+    for (const Instrument& inst : m_lotusInstruments) {
+        bonus += inst.efficiencyBonus();
+    }
+    return bonus;
+}
+
+void MeritHall::updateLotusDurations()
+{
+    if (m_lotusDurations.isEmpty()) return;
+
+    QList<Instrument::Type> expired;
+    for (auto it = m_lotusDurations.begin(); it != m_lotusDurations.end(); ++it) {
+        it.value()--;
+        if (it.value() <= 0) {
+            expired.append(it.key());
+        }
+    }
+
+    for (Instrument::Type type : expired) {
+        m_lotusDurations.remove(type);
+        // 从装备列表中移除
+        for (int i = 0; i < m_lotusInstruments.size(); ++i) {
+            if (m_lotusInstruments[i].type() == type) {
+                m_lotusInstruments.removeAt(i);
+                break;
+            }
+        }
+        QString name = Instrument::typeToString(type);
+        showEventPopup(QString("%1 已燃尽熄灭，自动卸下。").arg(name));
+    }
+
+    if (!expired.isEmpty()) {
+        updateLotusInstrumentDisplay();
+    }
+}
+
+// --- 修炼等级与法器共鸣显示 ---
+
+void MeritHall::setupCultivationDisplay()
+{
+    // 在 HUD 区域下方添加修炼等级显示
+    m_cultivationLabel = new QLabel(this);
+    m_cultivationLabel->setStyleSheet(
+        "QLabel {"
+        "  color: #FFD700;"
+        "  font-size: 14px;"
+        "  font-weight: bold;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  background-color: rgba(30, 40, 60, 0.65);"
+        "  border: 1px solid rgba(255, 215, 100, 0.4);"
+        "  border-radius: 8px;"
+        "  padding: 4px 10px;"
+        "}"
+    );
+    m_cultivationLabel->setAlignment(Qt::AlignCenter);
+    m_cultivationLabel->setText("凡人 Lv1");
+    m_cultivationLabel->adjustSize();
+
+    // 经验条
+    m_expBar = new QProgressBar(this);
+    m_expBar->setStyleSheet(
+        "QProgressBar {"
+        "  background-color: rgba(30, 40, 60, 0.65);"
+        "  border: 1px solid rgba(255, 215, 100, 0.4);"
+        "  border-radius: 6px;"
+        "  text-align: center;"
+        "  font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 11px;"
+        "  color: #F5F5DC;"
+        "}"
+        "QProgressBar::chunk {"
+        "  background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+        "    stop:0 #5D4037, stop:1 #FFD700);"
+        "  border-radius: 6px;"
+        "}"
+    );
+    m_expBar->setMaximum(100);
+    m_expBar->setValue(0);
+    m_expBar->setTextVisible(true);
+    m_expBar->setFormat("%v/%m");
+    m_expBar->setFixedSize(140, 18);
+
+    // 位置：HUD 下方
+    m_cultivationLabel->move(20, ui->hudWidget->y() + ui->hudWidget->height() + 8);
+    m_expBar->move(20, m_cultivationLabel->y() + m_cultivationLabel->height() + 4);
+
+    m_cultivationLabel->show();
+    m_expBar->show();
+}
+
+void MeritHall::updateCultivationDisplay()
+{
+    if (!m_wallet || !m_cultivationLabel || !m_expBar) return;
+
+    CultivationLevel* cl = m_wallet->cultivationLevel();
+    if (!cl) return;
+
+    m_cultivationLabel->setText(
+        QString("%1 Lv%2").arg(cl->levelTitle()).arg(cl->level())
+    );
+    m_cultivationLabel->adjustSize();
+
+    m_expBar->setMaximum(cl->maxExp());
+    m_expBar->setValue(cl->exp());
+}
+
+void MeritHall::updateResonance()
+{
+    if (!m_resonance) return;
+    m_resonance->updateResonance(m_cloudInstrument, m_lotusInstruments);
+}
+
+void MeritHall::showResonancePopup(const QString& name, const QString& description)
+{
+    showEventPopup(QString("✦ %1 ✦ %2").arg(name).arg(description));
 }

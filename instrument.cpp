@@ -18,10 +18,10 @@ double Instrument::price() const
     case TurboWoodenFish: return 2000;
     case QuantumPrayerBeads: return 8000;
     case AIChantingMachine: return 15000;
-    case Cassock: return 0;
-    case Compass: return 0;
-    case Fuchen: return 0;
-    case Ruyi: return 0;
+    case Cassock: return 1500;
+    case Compass: return 300;
+    case Fuchen: return 800;
+    case Ruyi: return 600;
     case AllSeeingEye: return 5000;
     default: return 0;
     }
@@ -44,10 +44,10 @@ double Instrument::autoReward() const
     case BasicIncense: return 0.5;
     case ElectronicIncense: return 1;
     case AIChantingMachine: return 10;
-    case Cassock: return 0;
-    case Compass: return 0;
-    case Fuchen: return 0;
-    case Ruyi: return 0;
+    case Cassock: return 0.3;
+    case Compass: return 0.3;
+    case Fuchen: return 0.4;
+    case Ruyi: return 0.5;
     default: return 0;
     }
 }
@@ -74,10 +74,39 @@ int Instrument::duration() const
     switch (m_type) {
     case BasicIncense: return 60;
     case ElectronicIncense: return 60;
-    case Cassock: return 0;
-    case Compass: return 0;
-    case Fuchen: return 0;
-    case Ruyi: return 0;
+    default: return 0;
+    }
+}
+
+int Instrument::critMultiplier() const
+{
+    switch (m_type) {
+    case QuantumPrayerBeads: return 10;
+    case AllSeeingEye: return 5;
+    default: return 1;
+    }
+}
+
+double Instrument::clickBonus() const
+{
+    switch (m_type) {
+    case Fuchen: return 0.5;
+    default: return 0;
+    }
+}
+
+double Instrument::critBonus() const
+{
+    switch (m_type) {
+    case Ruyi: return 0.05;
+    default: return 0;
+    }
+}
+
+double Instrument::efficiencyBonus() const
+{
+    switch (m_type) {
+    case Cassock: return 0.10;
     default: return 0;
     }
 }

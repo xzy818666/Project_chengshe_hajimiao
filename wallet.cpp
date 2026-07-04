@@ -16,6 +16,14 @@ Wallet::Wallet(QObject *parent) : QObject(parent),
     m_nextLifeLoss(0),
     m_leverageDebt(0)
 {
+    m_cultivationLevel = new CultivationLevel(this);
+    m_creditRating = new CreditRating(this);
+    connect(m_cultivationLevel, &CultivationLevel::levelUp,
+            this, &Wallet::cultivationLevelUp);
+    connect(m_creditRating, &CreditRating::gradeChanged,
+            this, [this](CreditRating::Grade, QString text) {
+                emit creditGradeChanged(text);
+            });
 }
 
 Wallet::Wallet(QObject *parent, double initialMerit, double nextLifePool,
@@ -31,6 +39,14 @@ Wallet::Wallet(QObject *parent, double initialMerit, double nextLifePool,
       m_nextLifeLoss(0),
       m_leverageDebt(0)
 {
+    m_cultivationLevel = new CultivationLevel(this);
+    m_creditRating = new CreditRating(this);
+    connect(m_cultivationLevel, &CultivationLevel::levelUp,
+            this, &Wallet::cultivationLevelUp);
+    connect(m_creditRating, &CreditRating::gradeChanged,
+            this, [this](CreditRating::Grade, QString text) {
+                emit creditGradeChanged(text);
+            });
 }
 
 double Wallet::merit() const
@@ -66,7 +82,11 @@ double Wallet::creditScore() const
 
 double Wallet::maxBorrow() const
 {
-    return m_creditScore * 2;
+    double base = m_creditScore * 2;
+    if (m_creditRating) {
+        base *= m_creditRating->creditLimitMultiplier();
+    }
+    return base;
 }
 
 bool Wallet::borrow(double amount)
@@ -160,7 +180,11 @@ void Wallet::applyInflation(double dt)
 void Wallet::updateDebtInterest()
 {
     if (m_debt > 0) {
-        double interest = m_debt * LOAN_RATE / 86400.0;
+        double rate = LOAN_RATE;
+        if (m_creditRating) {
+            rate *= m_creditRating->loanRateMultiplier();
+        }
+        double interest = m_debt * rate / 86400.0;
         m_debt += interest;
 
         if (m_debt > maxBorrow() * 1.5) {
@@ -469,4 +493,23 @@ double Wallet::getAssetCostBasis(const QString& assetId) const
 void Wallet::clearCostBasis(const QString& assetId)
 {
     m_assetCostBasis.remove(assetId);
+}
+
+// --- 修炼等级与信用等级 ---
+
+CultivationLevel* Wallet::cultivationLevel() const
+{
+    return m_cultivationLevel;
+}
+
+void Wallet::addCultivationExp(int amount)
+{
+    if (m_cultivationLevel) {
+        m_cultivationLevel->addExp(amount);
+    }
+}
+
+CreditRating* Wallet::creditRating() const
+{
+    return m_creditRating;
 }

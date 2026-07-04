@@ -7,6 +7,7 @@ class Instrument
 {
 public:
     enum Type {
+        None,
         BasicWoodenFish,
         BasicIncense,
         ElectronicIncense,
@@ -28,7 +29,12 @@ public:
     double autoReward() const;
     double maintenanceCost() const;
     double critChance() const;
+    int critMultiplier() const;
     int duration() const;
+
+    double clickBonus() const;
+    double critBonus() const;
+    double efficiencyBonus() const;
 
     Type type() const;
     bool hasCrit() const;

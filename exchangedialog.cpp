@@ -2,6 +2,7 @@
 #include "ui_exchangedialog.h"
 #include <QDateTime>
 #include <QMessageBox>
+#include <QFrame>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -80,24 +81,30 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
         }
     )");
 
-    // 按钮：木褐色底 + 米白文字
+    // 按钮：统一古风样式
     QString btnStyle = R"(
         QPushButton {
-            background-color: rgba(139, 90, 43, 0.85);
-            color: #FFF8E7;
-            border: 1px solid rgba(100, 60, 20, 0.7);
-            border-radius: 6px;
-            padding: 4px;
+            background-color: rgba(93, 64, 55, 0.88);
+            color: #FFD700;
+            border: 2px solid rgba(200, 160, 80, 0.7);
+            border-radius: 8px;
+            padding: 6px;
+            font-weight: bold;
+            font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;
+            font-size: 14px;
         }
         QPushButton:hover {
-            background-color: rgba(160, 110, 55, 0.95);
+            background-color: rgba(200, 160, 80, 0.85);
+            color: #3E2723;
         }
         QPushButton:pressed {
             background-color: rgba(120, 75, 35, 0.95);
+            color: #FFD700;
         }
         QPushButton:disabled {
             background-color: rgba(139, 90, 43, 0.35);
             color: #D7CCC8;
+            border: 2px solid rgba(139, 90, 43, 0.3);
         }
     )";
     ui->buyBtn->setStyleSheet(btnStyle);
@@ -307,21 +314,24 @@ ExchangeDialog::ExchangeDialog(QWidget *parent)
     // 默认显示交易模式
     setTradingMode(true);
 
-    QPushButton* backBtn = new QPushButton("返回", this);
+    QPushButton* backBtn = new QPushButton("⟵ 返回", this);
     backBtn->setStyleSheet(
         "QPushButton {"
-        "  background-color: rgba(139, 90, 43, 0.85);"
-        "  color: #FFF8E7;"
-        "  border: 1px solid rgba(100, 60, 20, 0.7);"
-        "  border-radius: 6px;"
-        "  padding: 4px 12px;"
+        "  background-color: rgba(93, 64, 55, 0.88);"
+        "  color: #FFD700;"
+        "  border: 2px solid rgba(255, 215, 0, 0.6);"
+        "  border-radius: 8px;"
+        "  padding: 6px 16px;"
         "  font-weight: bold;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 14px;"
         "}"
         "QPushButton:hover {"
-        "  background-color: rgba(160, 110, 55, 0.95);"
+        "  background-color: rgba(255, 215, 0, 0.85);"
+        "  color: #3E2723;"
         "}"
     );
-    backBtn->setGeometry(sz.width() - 90, 10, 70, 32);
+    backBtn->setGeometry(sz.width() - 110, 14, 90, 36);
     backBtn->setCursor(Qt::PointingHandCursor);
     backBtn->raise();
     connect(backBtn, &QPushButton::clicked, this, &ExchangeDialog::accept);
@@ -551,7 +561,7 @@ void ExchangeDialog::onBuy()
 
     double amount = ui->tradeAmount->value();
     if (amount <= 0) {
-        QMessageBox::information(this, "买入失败", "请输入有效的买入金额");
+        showToast("买入失败", "请输入有效的买入金额", "error");
         return;
     }
 
@@ -572,13 +582,13 @@ void ExchangeDialog::onBuy()
         double borrowed = amount - principal;
 
         if (m_wallet->merit() < principal) {
-            QMessageBox::information(this, "买入失败", "功德不足以支付保证金");
+            showToast("买入失败", "功德不足以支付保证金", "error");
             return;
         }
         if (borrowed > m_wallet->maxBorrow() * 0.5) {
-            QMessageBox::information(this, "买入失败",
-                QString("杠杆借款 %1 超过可用信用额度的50%%上限（%2）")
-                    .arg(borrowed, 0, 'f', 2).arg(m_wallet->maxBorrow() * 0.5, 0, 'f', 2));
+            showToast("买入失败",
+                QString("杠杆借款 %1 超过可用信用额度的50%上限（%2）")
+                    .arg(borrowed, 0, 'f', 2).arg(m_wallet->maxBorrow() * 0.5, 0, 'f', 2), "error");
             return;
         }
 
@@ -586,10 +596,10 @@ void ExchangeDialog::onBuy()
         m_wallet->openLeveragePosition(m_selectedAsset->id(), shares, principal, borrowed, leverage);
         m_wallet->recordAssetBuy(m_selectedAsset->id(), shares, amount);
         updatePortfolio();
-        QMessageBox::information(this, "杠杆买入成功",
+        showToast("杠杆买入成功",
             QString("以 %1× 杠杆买入 %2 %3 份\n本金: %4 功德 | 借款: %5 功德")
                 .arg(leverage, 0, 'f', 1).arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4)
-                .arg(principal, 0, 'f', 2).arg(borrowed, 0, 'f', 2));
+                .arg(principal, 0, 'f', 2).arg(borrowed, 0, 'f', 2), "success");
     } else {
         // 普通买入
         if (m_wallet->merit() >= amount) {
@@ -597,10 +607,10 @@ void ExchangeDialog::onBuy()
             m_wallet->addAsset(m_selectedAsset->id(), shares);
             m_wallet->recordAssetBuy(m_selectedAsset->id(), shares, amount);
             updatePortfolio();
-            QMessageBox::information(this, "买入成功",
-                QString("以 %1 功德买入 %2 %3 份").arg(amount, 0, 'f', 2).arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4));
+            showToast("买入成功",
+                QString("以 %1 功德买入 %2 %3 份").arg(amount, 0, 'f', 2).arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4), "success");
         } else {
-            QMessageBox::information(this, "买入失败", "功德不足");
+            showToast("买入失败", "功德不足", "error");
         }
     }
 }
@@ -611,7 +621,7 @@ void ExchangeDialog::onSell()
 
     double shares = ui->tradeAmount->value();
     if (shares <= 0) {
-        QMessageBox::information(this, "卖出失败", "请输入有效的卖出份额");
+        showToast("卖出失败", "请输入有效的卖出份额", "error");
         return;
     }
 
@@ -622,8 +632,8 @@ void ExchangeDialog::onSell()
     }
 
     if (available < shares) {
-        QMessageBox::information(this, "卖出失败",
-            QString("持仓不足，当前持有 %1 份").arg(available, 0, 'f', 4));
+        showToast("卖出失败",
+            QString("持仓不足，当前持有 %1 份").arg(available, 0, 'f', 4), "error");
         return;
     }
 
@@ -667,8 +677,8 @@ void ExchangeDialog::onSell()
     }
 
     updatePortfolio();
-    QMessageBox::information(this, "卖出成功",
-        QString("卖出 %1 %2 份，当前价格 %3").arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4).arg(price, 0, 'f', 2));
+    showToast("卖出成功",
+        QString("卖出 %1 %2 份，当前价格 %3").arg(m_selectedAsset->name()).arg(shares, 0, 'f', 4).arg(price, 0, 'f', 2), "success");
 }
 
 void ExchangeDialog::updatePrices()
@@ -1015,4 +1025,90 @@ QString ExchangeDialog::getPortfolioRiskRating()
     if (highRatio > 0.2) return "激进";
     if (mediumRatio > 0.5) return "均衡";
     return "保守";
+}
+
+
+// 统一古风通知弹窗（替换 QMessageBox）
+void ExchangeDialog::showToast(const QString& title, const QString& message, const QString& type)
+{
+    QDialog dialog(this, Qt::Dialog | Qt::FramelessWindowHint);
+    dialog.setAttribute(Qt::WA_TranslucentBackground);
+    dialog.setFixedSize(400, 220);
+
+    QString borderColor, titleColor, bgColor;
+    if (type == "success") {
+        borderColor = "rgba(80, 160, 80, 0.8)";
+        titleColor = "#81C784";
+        bgColor = "rgba(15, 30, 15, 0.95)";
+    } else if (type == "error") {
+        borderColor = "rgba(200, 80, 80, 0.8)";
+        titleColor = "#FF8A80";
+        bgColor = "rgba(30, 15, 15, 0.95)";
+    } else {
+        borderColor = "rgba(200, 160, 80, 0.7)";
+        titleColor = "#FFD700";
+        bgColor = "rgba(25, 20, 15, 0.95)";
+    }
+
+    QWidget *mask = new QWidget(&dialog);
+    mask->setGeometry(0, 0, 400, 220);
+    mask->setStyleSheet(
+        QString("QWidget {"
+                "  background-color: %1;"
+                "  border: 3px solid %2;"
+                "  border-radius: 16px;"
+                "}").arg(bgColor).arg(borderColor)
+    );
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    layout->setSpacing(12);
+    layout->setAlignment(Qt::AlignCenter);
+    layout->setContentsMargins(24, 20, 24, 20);
+
+    QLabel *titleLabel = new QLabel(title, &dialog);
+    titleLabel->setStyleSheet(
+        QString("font-size: 20px; font-weight: bold; color: %1;"
+                "font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;").arg(titleColor)
+    );
+    titleLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(titleLabel);
+
+    QFrame *line = new QFrame(&dialog);
+    line->setFrameShape(QFrame::HLine);
+    line->setStyleSheet(QString("color: %1;").arg(borderColor));
+    line->setFixedHeight(2);
+    layout->addWidget(line);
+
+    QLabel *msgLabel = new QLabel(message, &dialog);
+    msgLabel->setStyleSheet(
+        "font-size: 14px; color: #F5F5DC;"
+        "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
+    );
+    msgLabel->setAlignment(Qt::AlignCenter);
+    msgLabel->setWordWrap(true);
+    layout->addWidget(msgLabel);
+
+    QPushButton *okBtn = new QPushButton("知道了", &dialog);
+    okBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: rgba(93, 64, 55, 0.88);"
+        "  color: #FFD700;"
+        "  border: 2px solid rgba(200, 160, 80, 0.7);"
+        "  border-radius: 10px;"
+        "  padding: 8px 24px;"
+        "  font-weight: bold;"
+        "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
+        "  font-size: 14px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: rgba(200, 160, 80, 0.85);"
+        "  color: #3E2723;"
+        "}"
+    );
+    okBtn->setCursor(Qt::PointingHandCursor);
+    layout->addWidget(okBtn, 0, Qt::AlignCenter);
+
+    connect(okBtn, &QPushButton::clicked, &dialog, &QDialog::accept);
+
+    dialog.exec();
 }

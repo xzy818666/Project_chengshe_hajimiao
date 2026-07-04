@@ -35,7 +35,10 @@ SOURCES += \
     arbitragescanner.cpp \
     autoinvestor.cpp \
     startmenu.cpp \
-    savemanager.cpp
+    savemanager.cpp \
+    cultivationlevel.cpp \
+    instrumentresonance.cpp \
+    creditrating.cpp
 
 HEADERS += \
     wallet.h \
@@ -56,7 +59,10 @@ HEADERS += \
     arbitragescanner.h \
     autoinvestor.h \
     startmenu.h \
-    savemanager.h
+    savemanager.h \
+    cultivationlevel.h \
+    instrumentresonance.h \
+    creditrating.h
 
 FORMS += \
     merithall.ui \
