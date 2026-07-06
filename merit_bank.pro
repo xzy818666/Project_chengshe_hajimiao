@@ -4,72 +4,68 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
-# The following define makes your compiler emit warnings if you use
-# any Qt feature that has been marked deprecated (the exact warnings
-# depend on your compiler). Please consult the documentation of the
-# deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
-    meritbank.cpp \
-    wallet.cpp \
-    asset.cpp \
-    meritindex.cpp \
-    karmabond.cpp \
-    dharmafund.cpp \
-    samsarafutures.cpp \
-    instrument.cpp \
-    merithall.cpp \
-    bankdialog.cpp \
-    exchangedialog.cpp \
-    shopdialog.cpp \
-    marketevent.cpp \
-    achievementmanager.cpp \
-    achievementdialog.cpp \
-    portfolioadvisor.cpp \
-    arbitragescanner.cpp \
-    autoinvestor.cpp \
-    startmenu.cpp \
-    savemanager.cpp \
-    tutorialdialog.cpp \
-    cultivationlevel.cpp \
-    instrumentresonance.cpp \
-    creditrating.cpp \
-    tutorialmanager.cpp \
-    tutorialoverlay.cpp
+    src/meritbank.cpp \
+    src/wallet.cpp \
+    src/asset.cpp \
+    src/meritindex.cpp \
+    src/karmabond.cpp \
+    src/dharmafund.cpp \
+    src/samsarafutures.cpp \
+    src/instrument.cpp \
+    src/merithall.cpp \
+    src/bankdialog.cpp \
+    src/exchangedialog.cpp \
+    src/shopdialog.cpp \
+    src/marketevent.cpp \
+    src/achievementmanager.cpp \
+    src/achievementdialog.cpp \
+    src/portfolioadvisor.cpp \
+    src/arbitragescanner.cpp \
+    src/autoinvestor.cpp \
+    src/startmenu.cpp \
+    src/savemanager.cpp \
+    src/tutorialdialog.cpp \
+    src/cultivationlevel.cpp \
+    src/instrumentresonance.cpp \
+    src/creditrating.cpp \
+    src/tutorialmanager.cpp \
+    src/tutorialoverlay.cpp
 
 HEADERS += \
-    wallet.h \
-    asset.h \
-    meritindex.h \
-    karmabond.h \
-    dharmafund.h \
-    samsarafutures.h \
-    instrument.h \
-    merithall.h \
-    bankdialog.h \
-    exchangedialog.h \
-    shopdialog.h \
-    marketevent.h \
-    achievementmanager.h \
-    achievementdialog.h \
-    portfolioadvisor.h \
-    arbitragescanner.h \
-    autoinvestor.h \
-    startmenu.h \
-    savemanager.h \
-    tutorialdialog.h \
-    cultivationlevel.h \
-    instrumentresonance.h \
-    creditrating.h \
-    tutorialmanager.h \
-    tutorialoverlay.h
+    src/wallet.h \
+    src/asset.h \
+    src/meritindex.h \
+    src/karmabond.h \
+    src/dharmafund.h \
+    src/samsarafutures.h \
+    src/instrument.h \
+    src/merithall.h \
+    src/bankdialog.h \
+    src/exchangedialog.h \
+    src/shopdialog.h \
+    src/marketevent.h \
+    src/achievementmanager.h \
+    src/achievementdialog.h \
+    src/portfolioadvisor.h \
+    src/arbitragescanner.h \
+    src/autoinvestor.h \
+    src/startmenu.h \
+    src/savemanager.h \
+    src/tutorialdialog.h \
+    src/cultivationlevel.h \
+    src/instrumentresonance.h \
+    src/creditrating.h \
+    src/tutorialmanager.h \
+    src/tutorialoverlay.h
 
 FORMS += \
-    merithall.ui \
-    bankdialog.ui \
-    exchangedialog.ui \
-    shopdialog.ui
+    src/merithall.ui \
+    src/bankdialog.ui \
+    src/exchangedialog.ui \
+    src/shopdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
