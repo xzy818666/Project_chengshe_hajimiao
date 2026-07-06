@@ -36,9 +36,9 @@ void TutorialManager::buildSteps()
 
     m_steps.append({2,
         "每敲一次，功德+1。<br><br>"
-        "但你注意到通胀率了吗？<br>"
+        "但你注意到右上角的通胀率了吗？<br>"
         "<b style='color:#FF6B6B;'>每天默默吃掉你的功德。</b>",
-        "玄机子", "worried", "", "none", "", false, true, 2500});
+        "玄机子", "worried", "rightHudWidget", "none", "", false, true, 2500});
 
     m_steps.append({3,
         "还有个核心系统——<b>修炼等级</b>！<br><br>"
@@ -46,7 +46,7 @@ void TutorialManager::buildSteps()
         "• 效率+<b>2%</b> · 暴击上限+<b>1%</b><br>"
         "• 自动收益+<b>3%</b> · 最大杠杆+<b>0.1×</b><br><br>"
         "<b>越早点越赚，复利惊人！</b>",
-        "玄机子", "happy", "", "none", "", false, false, 0});
+        "玄机子", "happy", "hudWidget", "none", "", false, false, 0});
 
     m_steps.append({4,
         "只靠点击，永无出头之日。<br><br>"
@@ -100,8 +100,8 @@ void TutorialManager::buildSteps()
     m_steps.append({11,
         "记住这个原则：<br><br>"
         "<b style='color:#FF6B6B;'>存功德是慢性自杀，借功德是饮鸩止渴。</b><br><br>"
-        "赚功德还得去幻缘所。<br>"
-        "<b>请点击「返回」。</b>",
+        "但试试总无妨——<b>试着借一笔钱</b>，看看左边的神兽会说什么。<br>"
+        "然后点击「返回」继续旅程。",
         "玄机子", "normal", "", "dialog_close", "BankDialog", false, false, 0});
 
     // === 法器阁阶段（覆盖全部11件法器） ===

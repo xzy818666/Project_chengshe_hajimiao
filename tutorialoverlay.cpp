@@ -322,13 +322,18 @@ void TutorialOverlay::updateStep(const TutorialManager::Step* step)
         }
     }
 
+    // 保存当前步骤对话框名（用于气泡定位）
+    m_currentStepDialog = step->targetDialog;
+
     // 根据步骤类型决定交互模式
     bool needUserAction = (step->waitFor == "click_area" || step->waitFor == "click_cloud");
     if (needUserAction) {
+        // 需要用户点击特定区域：让事件穿透到下方控件
         setAttribute(Qt::WA_TransparentForMouseEvents, true);
         m_nextBtn->setText("等待操作...");
         m_nextBtn->setEnabled(false);
     } else {
+        // 纯说明/自动推进步骤：拦截事件，允许点击气泡按钮
         setAttribute(Qt::WA_TransparentForMouseEvents, false);
         m_nextBtn->setText("继续 →");
         m_nextBtn->setEnabled(true);
@@ -390,11 +395,16 @@ void TutorialOverlay::positionBubble()
             bubbleH = maxH; // 还是太高，强制裁剪
         }
 
-        // 5. 计算位置：目标在下半 → 气泡放顶部；目标在上半 → 气泡放底部
-        int x = (dialogW - bubbleW) / 2;
-        int y;
+        // 5. 计算位置
+        int x, y;
 
-        if (m_highlightTarget) {
+        // 特殊处理：善财司 dialog_close 步骤，气泡放左下角
+        if (m_currentStepDialog == "BankDialog") {
+            x = 10; // 左对齐
+            y = dialogH - bubbleH - 40; // 底部
+        } else if (m_highlightTarget) {
+            // 默认：目标在下半 → 气泡放顶部；目标在上半 → 气泡放底部
+            x = (dialogW - bubbleW) / 2;
             QPoint globalPos = m_highlightTarget->mapToGlobal(QPoint(0,0));
             QPoint dialogPos = parentWidget()->mapFromGlobal(globalPos);
             int targetCenterY = dialogPos.y() + m_highlightTarget->height() / 2;
@@ -406,10 +416,14 @@ void TutorialOverlay::positionBubble()
                 y = dialogH - bubbleH - 40; // 目标在上半，气泡放底部
             }
         } else {
-            y = 10; // 没有目标，默认放顶部
+            // 没有目标，默认放顶部居中
+            x = (dialogW - bubbleW) / 2;
+            y = 10;
         }
 
         // 6. 安全边界检查
+        if (x + bubbleW > dialogW - 20) x = dialogW - bubbleW - 20;
+        if (x < 10) x = 10;
         if (y + bubbleH > dialogH - 20) y = dialogH - bubbleH - 20;
         if (y < 10) y = 10;
 

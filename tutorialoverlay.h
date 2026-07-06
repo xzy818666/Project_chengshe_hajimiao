@@ -78,6 +78,9 @@ private:
     QGraphicsDropShadowEffect* m_glowEffect = nullptr;
     int m_glowPhase = 0;
 
+    // 当前步骤目标对话框（用于气泡定位）
+    QString m_currentStepDialog;
+
     // 主窗口引用
     QWidget* m_mainWindow = nullptr;
 
