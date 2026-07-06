@@ -6,32 +6,30 @@
 #include <QPushButton>
 #include <QPropertyAnimation>
 #include <QTimer>
-#include <QProgressBar>
 #include "tutorialmanager.h"
 
+class QGraphicsDropShadowEffect;
+
 /**
- * 教程覆盖层 - 绘制遮罩、高亮、箭头、气泡
- * 支持两种模式：
- *   - 主界面模式：覆盖全屏，绘制遮罩+高亮
- *   - 对话框模式：小型气泡，位于对话框底部，不遮挡控件
+ * 教程覆盖层
+ * 主界面模式：全屏遮罩+高亮挖洞
+ * 对话框模式：只显示气泡，用金色发光效果提示目标控件
  */
 class TutorialOverlay : public QWidget
 {
     Q_OBJECT
 public:
     explicit TutorialOverlay(QWidget *parent = nullptr);
+    ~TutorialOverlay();
 
     void startTutorial();
     void endTutorial();
 
-    // 设置目标高亮区域（父窗口坐标）
     void setHighlightRect(const QRect& rect);
     void clearHighlight();
 
-    // 更新当前步骤显示
     void updateStep(const TutorialManager::Step* step);
 
-    // 跟随对话框/主窗口切换
     void attachToDialog(QDialog* dialog);
     void detachToMainWindow();
 
@@ -44,37 +42,43 @@ private slots:
     void onNextClicked();
     void onSkipClicked();
     void onAutoAdvance();
+    void updateGlowPulse();  // 目标控件发光脉冲
 
 private:
     void setupUI();
     void positionBubble();
     void animateIn();
     QString avatarPath(const QString& expression) const;
+    void setWidgetGlow(QWidget* target);   // 给目标控件加金色发光
+    void clearWidgetGlow();                // 清除发光
 
-    // 高亮区域（仅主界面模式有效）
+    // 高亮区域（仅主界面模式）
     QRect m_highlightRect;
     bool m_hasHighlight;
 
     // 模式
-    bool m_dialogMode = false;  // true=对话框模式（小气泡，无遮罩）
+    bool m_dialogMode = false;
 
     // 气泡控件
     QWidget* m_bubble;
-    QLabel* m_avatarLabel;      // 头像
+    QLabel* m_avatarLabel;
     QLabel* m_speakerLabel;
     QLabel* m_textLabel;
     QPushButton* m_nextBtn;
     QPushButton* m_skipBtn;
     QLabel* m_stepIndicator;
-
-    // 箭头标签（仅主界面模式）
     QLabel* m_arrowLabel;
 
     // 动画
-    QPropertyAnimation* m_bubbleAnim;
     QTimer* m_autoTimer;
+    QTimer* m_glowTimer;  // 发光脉冲定时器
 
-    // 主窗口引用（用于从对话框恢复）
+    // 目标控件发光（对话框模式用）
+    QWidget* m_highlightTarget = nullptr;
+    QGraphicsDropShadowEffect* m_glowEffect = nullptr;
+    int m_glowPhase = 0;
+
+    // 主窗口引用
     QWidget* m_mainWindow = nullptr;
 
     bool m_tutorialActive;
