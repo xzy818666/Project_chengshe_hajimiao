@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ShopDialog</class>
+ <widget class="QDialog" name="ShopDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>法器阁</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="meritBalance">
+     <property name="text">
+      <string>功德: 0</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QListWidget" name="instrumentList"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="statusLabel">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <widget class="QPushButton" name="buyBtn">
+       <property name="text">
+        <string>购买</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="equipBtn">
+       <property name="text">
+        <string>装备</string>
+       </property>
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
