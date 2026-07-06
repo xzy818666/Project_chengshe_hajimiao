@@ -767,20 +767,46 @@ void MeritHall::updatePavilionPositions()
     pavilionShopBtn->setStyleSheet(pavilionStyle);
     pavilionAchievementBtn->setStyleSheet(pavilionStyle);
 
-    // 四个阁楼热区覆盖对应建筑区域（无文字，与背景牌匾自然融合）
-    // 右上：善财司
-    pavilionBankBtn->setGeometry(w * 0.66, h * 0.10, w * 0.34, h * 0.30);
-    // 左上：幻缘所
-    pavilionExchangeBtn->setGeometry(0, h * 0.10, w * 0.34, h * 0.30);
-    // 左下：法器阁
-    pavilionShopBtn->setGeometry(0, h * 0.45, w * 0.30, h * 0.27);
-    // 右下：成就
-    pavilionAchievementBtn->setGeometry(w * 0.70, h * 0.45, w * 0.30, h * 0.27);
-
-    // 更新门口光芒层位置（基于 2560x1440 背景图的精确像素坐标换算）
-    // 背景图缩放比例
+    // === 建筑门热区（只覆盖门/入口位置，基于 door_glow 中心坐标）===
+    // 背景图原尺寸 2560x1440，计算缩放比例
     double scale = static_cast<double>(w) / 2560.0;
 
+    // 左上 幻缘所：门中心 (821, 480)，热区 220x300（整体上移，露出牌匾）
+    {
+        int pw = static_cast<int>(220 * scale);
+        int ph = static_cast<int>(300 * scale);
+        int px = static_cast<int>(821 * scale) - pw / 2;
+        int py = static_cast<int>(480 * scale) - ph / 2;
+        pavilionExchangeBtn->setGeometry(px, py, pw, ph);
+    }
+
+    // 右上 善财司：门中心 (1777, 480)，热区 220x300（整体上移，露出牌匾）
+    {
+        int pw = static_cast<int>(220 * scale);
+        int ph = static_cast<int>(300 * scale);
+        int px = static_cast<int>(1777 * scale) - pw / 2;
+        int py = static_cast<int>(480 * scale) - ph / 2;
+        pavilionBankBtn->setGeometry(px, py, pw, ph);
+    }
+
+    // 左下 法器阁：门中心 (709, 930)，热区 280x350
+    {
+        int pw = static_cast<int>(280 * scale);
+        int ph = static_cast<int>(350 * scale);
+        int px = static_cast<int>(709 * scale) - pw / 2;
+        int py = static_cast<int>(930 * scale) - ph / 2;
+        pavilionShopBtn->setGeometry(px, py, pw, ph);
+    }
+
+    // 右下 成就：门中心 (1872, 930)，热区 280x350
+    {
+        int pw = static_cast<int>(280 * scale);
+        int ph = static_cast<int>(350 * scale);
+        int px = static_cast<int>(1872 * scale) - pw / 2;
+        int py = static_cast<int>(930 * scale) - ph / 2;
+        pavilionAchievementBtn->setGeometry(px, py, pw, ph);
+    }
+    // 更新门口光芒层位置（基于 2560x1440 背景图的精确像素坐标换算）
     // 法器阁：中心(709,924)，大小 50x150
     int gw1 = static_cast<int>(50 * scale);
     int gh1 = static_cast<int>(150 * scale);

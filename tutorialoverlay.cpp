@@ -260,8 +260,21 @@ void TutorialOverlay::updateGlowPulse()
 {
     if (!m_glowEffect) return;
     m_glowPhase = (m_glowPhase + 1) % 8;
-    int radius = 8 + qAbs(m_glowPhase - 4) * 5;  // 8, 13, 18, 23, 28, 23, 18, 13
+    int radius = 8 + qAbs(m_glowPhase - 4) * 5;
     m_glowEffect->setBlurRadius(radius);
+}
+
+// 查找目标控件（优先找可见且足够大的，避免 .ui 中的默认小控件）
+static QWidget* findTutorialTarget(QWidget* parent, const QString& name, int minW, int minH)
+{
+    if (!parent || name.isEmpty()) return nullptr;
+    QList<QWidget*> candidates = parent->findChildren<QWidget*>(name);
+    for (QWidget* c : candidates) {
+        if (c->isVisible() && c->width() > minW && c->height() > minH) {
+            return c;
+        }
+    }
+    return nullptr;
 }
 
 void TutorialOverlay::updateStep(const TutorialManager::Step* step)
@@ -293,10 +306,10 @@ void TutorialOverlay::updateStep(const TutorialManager::Step* step)
     // 清除旧的发光
     clearWidgetGlow();
 
-    // 主界面模式：查找高亮区域
+    // 主界面模式：查找高亮区域（优先找可见且足够大的控件）
     if (!m_dialogMode && !step->targetWidget.isEmpty() && parentWidget()) {
-        QWidget* target = parentWidget()->findChild<QWidget*>(step->targetWidget);
-        if (target && target->isVisible()) {
+        QWidget* target = findTutorialTarget(parentWidget(), step->targetWidget, 50, 50);
+        if (target) {
             QPoint globalPos = target->mapToGlobal(QPoint(0, 0));
             QPoint localPos = mapFromGlobal(globalPos);
             setHighlightRect(QRect(localPos, target->size()));
@@ -307,7 +320,7 @@ void TutorialOverlay::updateStep(const TutorialManager::Step* step)
 
     // 对话框模式：给目标控件添加金色发光
     if (m_dialogMode && !step->targetWidget.isEmpty() && parentWidget()) {
-        QWidget* target = parentWidget()->findChild<QWidget*>(step->targetWidget);
+        QWidget* target = findTutorialTarget(parentWidget(), step->targetWidget, 30, 30);
         if (target) {
             setWidgetGlow(target);
         }
@@ -328,12 +341,10 @@ void TutorialOverlay::updateStep(const TutorialManager::Step* step)
     // 根据步骤类型决定交互模式
     bool needUserAction = (step->waitFor == "click_area" || step->waitFor == "click_cloud");
     if (needUserAction) {
-        // 需要用户点击特定区域：让事件穿透到下方控件
         setAttribute(Qt::WA_TransparentForMouseEvents, true);
         m_nextBtn->setText("等待操作...");
         m_nextBtn->setEnabled(false);
     } else {
-        // 纯说明/自动推进步骤：拦截事件，允许点击气泡按钮
         setAttribute(Qt::WA_TransparentForMouseEvents, false);
         m_nextBtn->setText("继续 →");
         m_nextBtn->setEnabled(true);
@@ -358,23 +369,19 @@ void TutorialOverlay::positionBubble()
 {
     if (m_dialogMode) {
         // 对话框模式：气泡放在目标控件的对侧，避免遮挡
-        // 1. 强制布局更新，确保 sizeHint 基于最新文本
         if (m_bubble->layout()) {
             m_bubble->layout()->activate();
         }
 
-        // 2. 计算可用宽度（比对话框略窄，留出边距）
         int dialogW = parentWidget()->width();
         int dialogH = parentWidget()->height();
         int bubbleW = qMin(560, dialogW - 40);
-        if (bubbleW < 360) bubbleW = 360; // 最小宽度
+        if (bubbleW < 360) bubbleW = 360;
 
-        // 3. 先设宽度，再计算高度
         m_bubble->setFixedWidth(bubbleW);
         m_bubble->adjustSize();
         int bubbleH = m_bubble->height();
 
-        // 4. 如果气泡太高（超过对话框70%），缩小字体重新计算
         int maxH = dialogH * 0.65;
         if (bubbleH > maxH) {
             m_textLabel->setStyleSheet(
@@ -384,26 +391,21 @@ void TutorialOverlay::positionBubble()
             );
             m_bubble->adjustSize();
             bubbleH = m_bubble->height();
-            // 恢复字体（只用于本次计算，下次会重新设置）
             m_textLabel->setStyleSheet(
                 "font-size: 15px; color: #F5F5DC; line-height: 1.7;"
                 "font-family: 'STKaiti', 'KaiTi', 'SimSun', serif;"
                 "border: none; background: transparent;"
             );
         }
-        if (bubbleH > maxH) {
-            bubbleH = maxH; // 还是太高，强制裁剪
-        }
+        if (bubbleH > maxH) bubbleH = maxH;
 
-        // 5. 计算位置
         int x, y;
 
-        // 特殊处理：善财司 dialog_close 步骤，气泡放左下角
+        // 善财司 dialog_close 步骤，气泡放左下角
         if (m_currentStepDialog == "BankDialog") {
-            x = 10; // 左对齐
-            y = dialogH - bubbleH - 40; // 底部
+            x = 10;
+            y = dialogH - bubbleH - 40;
         } else if (m_highlightTarget) {
-            // 默认：目标在下半 → 气泡放顶部；目标在上半 → 气泡放底部
             x = (dialogW - bubbleW) / 2;
             QPoint globalPos = m_highlightTarget->mapToGlobal(QPoint(0,0));
             QPoint dialogPos = parentWidget()->mapFromGlobal(globalPos);
@@ -411,23 +413,20 @@ void TutorialOverlay::positionBubble()
             int midY = dialogH / 2;
 
             if (targetCenterY > midY) {
-                y = 10; // 目标在下半，气泡放顶部
+                y = 10;
             } else {
-                y = dialogH - bubbleH - 40; // 目标在上半，气泡放底部
+                y = dialogH - bubbleH - 40;
             }
         } else {
-            // 没有目标，默认放顶部居中
             x = (dialogW - bubbleW) / 2;
             y = 10;
         }
 
-        // 6. 安全边界检查
         if (x + bubbleW > dialogW - 20) x = dialogW - bubbleW - 20;
         if (x < 10) x = 10;
         if (y + bubbleH > dialogH - 20) y = dialogH - bubbleH - 20;
         if (y < 10) y = 10;
 
-        // 7. 给阴影留 10px padding
         int shadowPad = 10;
         setFixedSize(bubbleW + shadowPad*2, bubbleH + shadowPad*2);
         move(x - shadowPad, y - shadowPad);
@@ -481,7 +480,6 @@ void TutorialOverlay::paintEvent(QPaintEvent* event)
 {
     Q_UNUSED(event)
 
-    // 对话框模式不绘制任何东西（只显示气泡，发光效果由 QGraphicsEffect 处理）
     if (m_dialogMode) {
         return;
     }
@@ -516,6 +514,16 @@ void TutorialOverlay::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
     if (m_tutorialActive) {
+        // 窗口大小变化后重新计算高亮位置
+        const TutorialManager::Step* step = TutorialManager::instance()->currentStep();
+        if (step && !step->targetWidget.isEmpty() && !m_dialogMode && parentWidget()) {
+            QWidget* target = findTutorialTarget(parentWidget(), step->targetWidget, 50, 50);
+            if (target) {
+                QPoint globalPos = target->mapToGlobal(QPoint(0, 0));
+                QPoint localPos = mapFromGlobal(globalPos);
+                setHighlightRect(QRect(localPos, target->size()));
+            }
+        }
         positionBubble();
     }
 }
@@ -556,7 +564,6 @@ void TutorialOverlay::attachToDialog(QDialog* dialog)
     m_dialogMode = true;
     setParent(dialog);
 
-    // 对话框模式：只显示气泡，不覆盖整个对话框
     setWindowFlags(Qt::Widget);
     setAttribute(Qt::WA_TransparentForMouseEvents, false);
 

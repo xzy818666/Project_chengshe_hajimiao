@@ -26,4 +26,17 @@ release/
 # IDE 配置
 .vscode/
 .idea/
-.DS_Store
+.qtcreator/
+.qtc_clangd/
+
+# Python 临时文件
+__pycache__/
+*.pyc
+*.pyo
+update_ppt.py
+
+# PPT 临时文件
+.~*.pptx
+
+# 图片素材备份
+tutorial_slide*.png

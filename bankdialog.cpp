@@ -1,5 +1,6 @@
 #include "bankdialog.h"
 #include "ui_bankdialog.h"
+#include "tutorialmanager.h"
 #include <QMessageBox>
 #include <QFrame>
 #include <QTableWidgetItem>
@@ -74,6 +75,18 @@ BankDialog::BankDialog(QWidget *parent)
     connect(ui->confessBtn, &QPushButton::clicked, this, &BankDialog::onConfess);
     connect(ui->addMarginBtn, &QPushButton::clicked, this, &BankDialog::onAddMargin);
     connect(ui->closeAllLeverageBtn, &QPushButton::clicked, this, &BankDialog::onCloseAllLeverage);
+
+    // 教程支持：点击"功德借贷"标签和"借贷"按钮时通知教程管理器
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
+        if (index == 1 && TutorialManager::instance()->isActive()) {
+            TutorialManager::instance()->notifyAreaClicked("bankLoanTab");
+        }
+    });
+    connect(ui->borrowBtn, &QPushButton::clicked, this, []() {
+        if (TutorialManager::instance()->isActive()) {
+            TutorialManager::instance()->notifyAreaClicked("bankBorrowBtn");
+        }
+    });
 
     setupBeastTalk();
 
