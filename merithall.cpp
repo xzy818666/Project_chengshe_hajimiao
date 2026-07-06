@@ -1403,26 +1403,21 @@ void MeritHall::updateLotusDurations()
 
 void MeritHall::setupCultivationDisplay()
 {
-    // 在 HUD 区域下方添加修炼等级显示
-    m_cultivationLabel = new QLabel(this);
+    // 在 rightHudWidget 中集成修炼等级显示（避免与左侧HUD重叠）
+    m_cultivationLabel = new QLabel(ui->rightHudWidget);
     m_cultivationLabel->setStyleSheet(
         "QLabel {"
         "  color: #FFD700;"
-        "  font-size: 14px;"
+        "  font-size: 13px;"
         "  font-weight: bold;"
         "  font-family: 'STXingkai', 'STKaiti', 'LiSu', 'KaiTi', 'SimSun', serif;"
-        "  background-color: rgba(30, 40, 60, 0.65);"
-        "  border: 1px solid rgba(255, 215, 100, 0.4);"
-        "  border-radius: 8px;"
-        "  padding: 4px 10px;"
         "}"
     );
     m_cultivationLabel->setAlignment(Qt::AlignCenter);
-    m_cultivationLabel->setText("凡人 Lv1");
-    m_cultivationLabel->adjustSize();
+    m_cultivationLabel->setText("凡人 Lv1 | 效率+2% 暴击+1%");
 
     // 经验条
-    m_expBar = new QProgressBar(this);
+    m_expBar = new QProgressBar(ui->rightHudWidget);
     m_expBar->setStyleSheet(
         "QProgressBar {"
         "  background-color: rgba(30, 40, 60, 0.65);"
@@ -1443,14 +1438,11 @@ void MeritHall::setupCultivationDisplay()
     m_expBar->setValue(0);
     m_expBar->setTextVisible(true);
     m_expBar->setFormat("%v/%m");
-    m_expBar->setFixedSize(140, 18);
+    m_expBar->setFixedHeight(14);
 
-    // 位置：HUD 下方
-    m_cultivationLabel->move(20, ui->hudWidget->y() + ui->hudWidget->height() + 8);
-    m_expBar->move(20, m_cultivationLabel->y() + m_cultivationLabel->height() + 4);
-
-    m_cultivationLabel->show();
-    m_expBar->show();
+    // 添加到 rightHudLayout 第4行
+    ui->rightHudLayout->addWidget(m_cultivationLabel, 4, 0, 1, 2);
+    ui->rightHudLayout->addWidget(m_expBar, 5, 0, 1, 2);
 }
 
 void MeritHall::updateCultivationDisplay()
@@ -1461,9 +1453,14 @@ void MeritHall::updateCultivationDisplay()
     if (!cl) return;
 
     m_cultivationLabel->setText(
-        QString("%1 Lv%2").arg(cl->levelTitle()).arg(cl->level())
+        QString("%1 Lv%2 | 效率+%3% 暴击+%4% 自动+%5% 杠杆+%6×")
+            .arg(cl->levelTitle())
+            .arg(cl->level())
+            .arg(cl->efficiencyBonus() * 100, 0, 'f', 0)
+            .arg(cl->critRateBonus() * 100, 0, 'f', 0)
+            .arg(cl->autoIncomeBonus() * 100, 0, 'f', 0)
+            .arg(cl->maxLeverageBonus(), 0, 'f', 1)
     );
-    m_cultivationLabel->adjustSize();
 
     m_expBar->setMaximum(cl->maxExp());
     m_expBar->setValue(cl->exp());
