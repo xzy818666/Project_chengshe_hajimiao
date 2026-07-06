@@ -13,13 +13,14 @@
 #include "instrument.h"
 #include "asset.h"
 #include "marketevent.h"
+#include "achievementmanager.h"
+#include "instrumentresonance.h"
+#include "tutorialmanager.h"
+#include "tutorialoverlay.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MeritHall; }
 QT_END_NAMESPACE
-
-#include "achievementmanager.h"
-#include "instrumentresonance.h"
 
 class MeritHall : public QMainWindow
 {
@@ -136,6 +137,11 @@ private:
 
     // 法器贴图显示
     QLabel *m_cloudInstrumentLabel;   // 云上法器（基础木鱼/涡轮/量子佛珠）
+
+    // 内嵌教程系统
+    TutorialOverlay* m_tutorialOverlay = nullptr;
+    void setupTutorial();
+    void checkTutorialOnShow();
 };
 
 #endif // MERITHALL_H

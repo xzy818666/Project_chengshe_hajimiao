@@ -71,7 +71,13 @@ SOURCES       = meritbank.cpp \
 		arbitragescanner.cpp \
 		autoinvestor.cpp \
 		startmenu.cpp \
-		savemanager.cpp qrc_resources.cpp \
+		savemanager.cpp \
+		tutorialdialog.cpp \
+		cultivationlevel.cpp \
+		instrumentresonance.cpp \
+		creditrating.cpp \
+		tutorialmanager.cpp \
+		tutorialoverlay.cpp qrc_resources.cpp \
 		moc_wallet.cpp \
 		moc_asset.cpp \
 		moc_meritindex.cpp \
@@ -88,7 +94,13 @@ SOURCES       = meritbank.cpp \
 		moc_portfolioadvisor.cpp \
 		moc_arbitragescanner.cpp \
 		moc_autoinvestor.cpp \
-		moc_startmenu.cpp
+		moc_startmenu.cpp \
+		moc_tutorialdialog.cpp \
+		moc_cultivationlevel.cpp \
+		moc_instrumentresonance.cpp \
+		moc_creditrating.cpp \
+		moc_tutorialmanager.cpp \
+		moc_tutorialoverlay.cpp
 OBJECTS       = meritbank.o \
 		wallet.o \
 		asset.o \
@@ -109,6 +121,12 @@ OBJECTS       = meritbank.o \
 		autoinvestor.o \
 		startmenu.o \
 		savemanager.o \
+		tutorialdialog.o \
+		cultivationlevel.o \
+		instrumentresonance.o \
+		creditrating.o \
+		tutorialmanager.o \
+		tutorialoverlay.o \
 		qrc_resources.o \
 		moc_wallet.o \
 		moc_asset.o \
@@ -126,7 +144,13 @@ OBJECTS       = meritbank.o \
 		moc_portfolioadvisor.o \
 		moc_arbitragescanner.o \
 		moc_autoinvestor.o \
-		moc_startmenu.o
+		moc_startmenu.o \
+		moc_tutorialdialog.o \
+		moc_cultivationlevel.o \
+		moc_instrumentresonance.o \
+		moc_creditrating.o \
+		moc_tutorialmanager.o \
+		moc_tutorialoverlay.o
 DIST          = ../../Qt/6.11.0/macos/mkspecs/features/spec_pre.prf \
 		../../Qt/6.11.0/macos/mkspecs/features/device_config.prf \
 		../../Qt/6.11.0/macos/mkspecs/common/unix.conf \
@@ -393,7 +417,13 @@ DIST          = ../../Qt/6.11.0/macos/mkspecs/features/spec_pre.prf \
 		arbitragescanner.h \
 		autoinvestor.h \
 		startmenu.h \
-		savemanager.h meritbank.cpp \
+		savemanager.h \
+		tutorialdialog.h \
+		cultivationlevel.h \
+		instrumentresonance.h \
+		creditrating.h \
+		tutorialmanager.h \
+		tutorialoverlay.h meritbank.cpp \
 		wallet.cpp \
 		asset.cpp \
 		meritindex.cpp \
@@ -412,7 +442,13 @@ DIST          = ../../Qt/6.11.0/macos/mkspecs/features/spec_pre.prf \
 		arbitragescanner.cpp \
 		autoinvestor.cpp \
 		startmenu.cpp \
-		savemanager.cpp
+		savemanager.cpp \
+		tutorialdialog.cpp \
+		cultivationlevel.cpp \
+		instrumentresonance.cpp \
+		creditrating.cpp \
+		tutorialmanager.cpp \
+		tutorialoverlay.cpp
 QMAKE_TARGET  = merit_bank
 DESTDIR       = 
 TARGET        = merit_bank.app/Contents/MacOS/merit_bank
@@ -975,8 +1011,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
-	$(COPY_FILE) --parents wallet.h asset.h meritindex.h karmabond.h dharmafund.h samsarafutures.h instrument.h merithall.h bankdialog.h exchangedialog.h shopdialog.h marketevent.h achievementmanager.h achievementdialog.h portfolioadvisor.h arbitragescanner.h autoinvestor.h startmenu.h savemanager.h $(DISTDIR)/
-	$(COPY_FILE) --parents meritbank.cpp wallet.cpp asset.cpp meritindex.cpp karmabond.cpp dharmafund.cpp samsarafutures.cpp instrument.cpp merithall.cpp bankdialog.cpp exchangedialog.cpp shopdialog.cpp marketevent.cpp achievementmanager.cpp achievementdialog.cpp portfolioadvisor.cpp arbitragescanner.cpp autoinvestor.cpp startmenu.cpp savemanager.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents wallet.h asset.h meritindex.h karmabond.h dharmafund.h samsarafutures.h instrument.h merithall.h bankdialog.h exchangedialog.h shopdialog.h marketevent.h achievementmanager.h achievementdialog.h portfolioadvisor.h arbitragescanner.h autoinvestor.h startmenu.h savemanager.h tutorialdialog.h cultivationlevel.h instrumentresonance.h creditrating.h tutorialmanager.h tutorialoverlay.h $(DISTDIR)/
+	$(COPY_FILE) --parents meritbank.cpp wallet.cpp asset.cpp meritindex.cpp karmabond.cpp dharmafund.cpp samsarafutures.cpp instrument.cpp merithall.cpp bankdialog.cpp exchangedialog.cpp shopdialog.cpp marketevent.cpp achievementmanager.cpp achievementdialog.cpp portfolioadvisor.cpp arbitragescanner.cpp autoinvestor.cpp startmenu.cpp savemanager.cpp tutorialdialog.cpp cultivationlevel.cpp instrumentresonance.cpp creditrating.cpp tutorialmanager.cpp tutorialoverlay.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents merithall.ui bankdialog.ui exchangedialog.ui shopdialog.ui $(DISTDIR)/
 
 
@@ -1035,13 +1071,16 @@ qrc_resources.cpp: resources.qrc \
 		images/basic_joss_stick.png
 	/Users/qtx/Qt/6.11.0/macos/libexec/rcc -name resources --no-zstd resources.qrc -o qrc_resources.cpp
 
-compiler_moc_header_make_all: moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp moc_startmenu.cpp
+compiler_moc_header_make_all: moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp moc_startmenu.cpp moc_tutorialdialog.cpp moc_cultivationlevel.cpp moc_instrumentresonance.cpp moc_creditrating.cpp moc_tutorialmanager.cpp moc_tutorialoverlay.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp moc_startmenu.cpp
+	-$(DEL_FILE) moc_wallet.cpp moc_asset.cpp moc_meritindex.cpp moc_karmabond.cpp moc_dharmafund.cpp moc_samsarafutures.cpp moc_merithall.cpp moc_bankdialog.cpp moc_exchangedialog.cpp moc_shopdialog.cpp moc_marketevent.cpp moc_achievementmanager.cpp moc_achievementdialog.cpp moc_portfolioadvisor.cpp moc_arbitragescanner.cpp moc_autoinvestor.cpp moc_startmenu.cpp moc_tutorialdialog.cpp moc_cultivationlevel.cpp moc_instrumentresonance.cpp moc_creditrating.cpp moc_tutorialmanager.cpp moc_tutorialoverlay.cpp
 moc_wallet.cpp: wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
+		cultivationlevel.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
 		../../Qt/6.11.0/macos/libexec/moc
 	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib wallet.h -o moc_wallet.cpp
 
@@ -1087,18 +1126,27 @@ moc_merithall.cpp: merithall.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QFrame \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QPropertyAnimation \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QProgressBar \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
-		instrument.h \
+		cultivationlevel.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
+		instrument.h \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		marketevent.h \
 		achievementmanager.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QSet \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QStringList \
+		instrumentresonance.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
+		tutorialmanager.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRect \
+		tutorialoverlay.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
 		../../Qt/6.11.0/macos/libexec/moc
 	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib merithall.h -o moc_merithall.cpp
 
@@ -1108,6 +1156,9 @@ moc_bankdialog.cpp: bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
+		cultivationlevel.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		../../Qt/6.11.0/macos/libexec/moc
@@ -1122,10 +1173,12 @@ moc_exchangedialog.cpp: exchangedialog.h \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
+		cultivationlevel.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		marketevent.h \
-		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
 		../../Qt/6.11.0/macos/libexec/moc
 	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib exchangedialog.h -o moc_exchangedialog.cpp
 
@@ -1137,8 +1190,10 @@ moc_shopdialog.cpp: shopdialog.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
-		instrument.h \
+		cultivationlevel.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
+		instrument.h \
 		../../Qt/6.11.0/macos/libexec/moc
 	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib shopdialog.h -o moc_shopdialog.cpp
 
@@ -1191,6 +1246,61 @@ moc_startmenu.cpp: startmenu.h \
 		../../Qt/6.11.0/macos/libexec/moc
 	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib startmenu.h -o moc_startmenu.cpp
 
+moc_tutorialdialog.cpp: tutorialdialog.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QHBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QStackedWidget \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QProgressBar \
+		../../Qt/6.11.0/macos/libexec/moc
+	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib tutorialdialog.h -o moc_tutorialdialog.cpp
+
+moc_cultivationlevel.cpp: cultivationlevel.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		../../Qt/6.11.0/macos/libexec/moc
+	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib cultivationlevel.h -o moc_cultivationlevel.cpp
+
+moc_instrumentresonance.cpp: instrumentresonance.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		instrument.h \
+		../../Qt/6.11.0/macos/libexec/moc
+	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib instrumentresonance.h -o moc_instrumentresonance.cpp
+
+moc_creditrating.cpp: creditrating.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		../../Qt/6.11.0/macos/libexec/moc
+	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib creditrating.h -o moc_creditrating.cpp
+
+moc_tutorialmanager.cpp: tutorialmanager.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRect \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
+		../../Qt/6.11.0/macos/libexec/moc
+	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib tutorialmanager.h -o moc_tutorialmanager.cpp
+
+moc_tutorialoverlay.cpp: tutorialoverlay.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QPropertyAnimation \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QProgressBar \
+		tutorialmanager.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRect \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
+		../../Qt/6.11.0/macos/libexec/moc
+	/Users/qtx/Qt/6.11.0/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/qtx/Qt/6.11.0/macos/mkspecs/macx-clang -I/Users/qtx/Desktop/Project_chengshe_hajimiao -I/Users/qtx/Qt/6.11.0/macos/lib/QtCharts.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGLWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtWidgets.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtOpenGL.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtGui.framework/Headers -I/Users/qtx/Qt/6.11.0/macos/lib/QtCore.framework/Headers -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -F/Users/qtx/Qt/6.11.0/macos/lib tutorialoverlay.h -o moc_tutorialoverlay.cpp
+
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
 compiler_moc_source_make_all:
@@ -1240,17 +1350,25 @@ meritbank.o: meritbank.cpp ../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDate \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QFrame \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QPropertyAnimation \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QProgressBar \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
-		instrument.h \
+		cultivationlevel.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
+		instrument.h \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		marketevent.h \
 		achievementmanager.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QSet \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QStringList \
+		instrumentresonance.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
+		tutorialmanager.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRect \
+		tutorialoverlay.h \
 		meritindex.h \
 		karmabond.h \
 		dharmafund.h \
@@ -1261,7 +1379,10 @@ meritbank.o: meritbank.cpp ../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers
 wallet.o: wallet.cpp wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
-		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
+		cultivationlevel.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o wallet.o wallet.cpp
 
 asset.o: asset.cpp asset.h \
@@ -1305,18 +1426,27 @@ merithall.o: merithall.cpp merithall.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QFrame \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QPropertyAnimation \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QProgressBar \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
-		instrument.h \
+		cultivationlevel.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
+		instrument.h \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		marketevent.h \
 		achievementmanager.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QSet \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QStringList \
+		instrumentresonance.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
+		tutorialmanager.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRect \
+		tutorialoverlay.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
 		ui_merithall.h \
 		bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
@@ -1332,7 +1462,6 @@ merithall.o: merithall.cpp merithall.h \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPalette \
 		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QBrush \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QGridLayout \
-		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMessageBox \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialogButtonBox \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
@@ -1345,10 +1474,14 @@ bankdialog.o: bankdialog.cpp bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
+		cultivationlevel.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		ui_bankdialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMessageBox \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QFrame \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QTableWidgetItem \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
@@ -1365,12 +1498,15 @@ exchangedialog.o: exchangedialog.cpp exchangedialog.h \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
+		cultivationlevel.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		marketevent.h \
-		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
 		ui_exchangedialog.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QMessageBox \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QFrame \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
@@ -1389,8 +1525,10 @@ shopdialog.o: shopdialog.cpp shopdialog.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
-		instrument.h \
+		cultivationlevel.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		creditrating.h \
+		instrument.h \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QHBoxLayout \
 		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
@@ -1452,6 +1590,8 @@ autoinvestor.o: autoinvestor.cpp autoinvestor.h \
 		wallet.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QMap \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime \
+		cultivationlevel.h \
+		creditrating.h \
 		asset.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QVector \
 		portfolioadvisor.h \
@@ -1478,6 +1618,63 @@ savemanager.o: savemanager.cpp savemanager.h \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QStandardPaths \
 		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QDateTime
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o savemanager.o savemanager.cpp
+
+tutorialdialog.o: tutorialdialog.cpp tutorialdialog.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QDialog \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QHBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QStackedWidget \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QProgressBar \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QGraphicsDropShadowEffect
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o tutorialdialog.o tutorialdialog.cpp
+
+cultivationlevel.o: cultivationlevel.cpp cultivationlevel.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QtMath
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o cultivationlevel.o cultivationlevel.cpp
+
+instrumentresonance.o: instrumentresonance.cpp instrumentresonance.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		instrument.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o instrumentresonance.o instrumentresonance.cpp
+
+creditrating.o: creditrating.cpp creditrating.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o creditrating.o creditrating.cpp
+
+tutorialmanager.o: tutorialmanager.cpp tutorialmanager.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRect \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QSettings
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o tutorialmanager.o tutorialmanager.cpp
+
+tutorialoverlay.o: tutorialoverlay.cpp tutorialoverlay.h \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QWidget \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QLabel \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QPushButton \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QPropertyAnimation \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QTimer \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QProgressBar \
+		tutorialmanager.h \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QObject \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QRect \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QString \
+		../../Qt/6.11.0/macos/lib/QtCore.framework/Headers/QList \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPainter \
+		../../Qt/6.11.0/macos/lib/QtGui.framework/Headers/QPainterPath \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QVBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QHBoxLayout \
+		../../Qt/6.11.0/macos/lib/QtWidgets.framework/Headers/QGraphicsDropShadowEffect
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o tutorialoverlay.o tutorialoverlay.cpp
 
 qrc_resources.o: qrc_resources.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_resources.o qrc_resources.cpp
@@ -1532,6 +1729,24 @@ moc_autoinvestor.o: moc_autoinvestor.cpp
 
 moc_startmenu.o: moc_startmenu.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_startmenu.o moc_startmenu.cpp
+
+moc_tutorialdialog.o: moc_tutorialdialog.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_tutorialdialog.o moc_tutorialdialog.cpp
+
+moc_cultivationlevel.o: moc_cultivationlevel.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_cultivationlevel.o moc_cultivationlevel.cpp
+
+moc_instrumentresonance.o: moc_instrumentresonance.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_instrumentresonance.o moc_instrumentresonance.cpp
+
+moc_creditrating.o: moc_creditrating.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_creditrating.o moc_creditrating.cpp
+
+moc_tutorialmanager.o: moc_tutorialmanager.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_tutorialmanager.o moc_tutorialmanager.cpp
+
+moc_tutorialoverlay.o: moc_tutorialoverlay.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_tutorialoverlay.o moc_tutorialoverlay.cpp
 
 ####### Install
 

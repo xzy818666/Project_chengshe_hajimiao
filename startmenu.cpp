@@ -114,5 +114,7 @@ StartMenu::StartMenu(QWidget *parent)
 void StartMenu::onStartClicked()
 {
     GameDifficulty diff = static_cast<GameDifficulty>(m_difficultyCombo->currentData().toInt());
+
+    // 内嵌式教程由 MeritHall 首次显示时自动启动，不在此处弹窗
     emit startGame(diff);
 }

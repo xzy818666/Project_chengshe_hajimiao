@@ -146,12 +146,16 @@ MeritHall::MeritHall(QWidget *parent)
     connect(m_updateTimer, &QTimer::timeout, this, &MeritHall::updateAutoIncome);
     connect(m_updateTimer, &QTimer::timeout, this, &MeritHall::updateMarketEvent);
     m_updateTimer->start(1000);
+
+    // 初始化教程系统
+    setupTutorial();
 }
 
 MeritHall::~MeritHall()
 {
     delete ui;
 }
+
 
 void MeritHall::setupEventPopup()
 {
@@ -280,6 +284,9 @@ void MeritHall::onInstrumentReleased()
 void MeritHall::onInstrumentClicked()
 {
     if (!m_wallet) return;
+
+    // 通知教程系统：用户点击了云海
+    TutorialManager::instance()->notifyAreaClicked("fishClickArea");
 
     m_clickCount++;
     double reward = m_cloudInstrument.clickReward() + totalLotusClickBonus();
@@ -592,26 +599,38 @@ void MeritHall::updateMarketEvent()
 
 void MeritHall::onBankClicked()
 {
+    // 通知教程系统：用户点击了善财司建筑
+    TutorialManager::instance()->notifyAreaClicked("pavilionBankBtn");
     BankDialog dialog(this);
     dialog.setWallet(m_wallet);
     dialog.setAssets(m_assets);
+    TutorialManager::instance()->notifyDialogOpened(&dialog, "BankDialog");
     dialog.exec();
+
+    TutorialManager::instance()->notifyDialogClosed("BankDialog");
+    checkTutorialOnShow();
     updateHUD();
 }
 
 void MeritHall::onExchangeClicked()
 {
+    TutorialManager::instance()->notifyAreaClicked("pavilionExchangeBtn");
     ExchangeDialog dialog(this);
     dialog.setWallet(m_wallet);
     dialog.setAssets(m_assets);
     dialog.setMarketEvent(m_marketEvent);
     dialog.setMaxLeverage(m_maxLeverage);
+    TutorialManager::instance()->notifyDialogOpened(&dialog, "ExchangeDialog");
     dialog.exec();
+
+    TutorialManager::instance()->notifyDialogClosed("ExchangeDialog");
+    checkTutorialOnShow();
     updateHUD();
 }
 
 void MeritHall::onShopClicked()
 {
+    TutorialManager::instance()->notifyAreaClicked("pavilionShopBtn");
     ShopDialog dialog(this);
     dialog.setWallet(m_wallet);
     connect(&dialog, &ShopDialog::cloudInstrumentChanged, [this](const Instrument& instrument) {
@@ -638,9 +657,14 @@ void MeritHall::onShopClicked()
         }
         updateLotusInstrumentDisplay();
     });
+    TutorialManager::instance()->notifyDialogOpened(&dialog, "ShopDialog");
     dialog.exec();
+
+    TutorialManager::instance()->notifyDialogClosed("ShopDialog");
+    checkTutorialOnShow();
     updateHUD();
 }
+
 
 void MeritHall::updateInstrumentIcon()
 {
@@ -809,6 +833,12 @@ void MeritHall::resizeEvent(QResizeEvent *event)
     updateFishClickAreaPosition(m_fishClickArea);
     updateCloudInstrumentPosition();
     updateLotusInstrumentPosition();
+
+    // 更新教程覆盖层大小
+    if (m_tutorialOverlay) {
+        m_tutorialOverlay->setGeometry(0, 0, width(), height());
+        m_tutorialOverlay->raise();
+    }
 }
 
 void MeritHall::updateFishGlowPosition()
@@ -851,6 +881,9 @@ void MeritHall::updateCloudInstrumentDisplay()
     }
     m_cloudInstrumentLabel->raise();
     m_cloudInstrumentLabel->show();
+    if (TutorialManager::instance()->isActive() && m_tutorialOverlay) {
+        m_tutorialOverlay->raise();
+    }
 }
 
 static QString lotusImagePath(Instrument::Type type)
@@ -899,6 +932,9 @@ void MeritHall::updateLotusInstrumentDisplay()
         m_lotusLabels[i]->show();
     }
     updateLotusInstrumentPosition();
+    if (TutorialManager::instance()->isActive() && m_tutorialOverlay) {
+        m_tutorialOverlay->raise();
+    }
 }
 
 void MeritHall::updateCloudInstrumentPosition()
@@ -978,9 +1014,17 @@ bool MeritHall::eventFilter(QObject *obj, QEvent *event)
 void MeritHall::onAchievementClicked()
 {
     if (!m_achievementManager) return;
+
+    TutorialManager::instance()->notifyAreaClicked("pavilionAchievementBtn");
+
     AchievementDialog dialog(m_achievementManager, this);
+    TutorialManager::instance()->notifyDialogOpened(&dialog, "AchievementDialog");
     dialog.exec();
+
+    TutorialManager::instance()->notifyDialogClosed("AchievementDialog");
+    checkTutorialOnShow();
 }
+
 
 void MeritHall::createEndSamsaraButton()
 {
@@ -1434,4 +1478,49 @@ void MeritHall::updateResonance()
 void MeritHall::showResonancePopup(const QString& name, const QString& description)
 {
     showEventPopup(QString("✦ %1 ✦ %2").arg(name).arg(description));
+}
+
+// --- 内嵌教程系统 ---
+
+void MeritHall::setupTutorial()
+{
+    m_tutorialOverlay = new TutorialOverlay(this);
+    m_tutorialOverlay->setGeometry(0, 0, width(), height());
+    m_tutorialOverlay->hide();
+
+    // 连接 TutorialManager 步骤变化信号，更新高亮区域
+    connect(TutorialManager::instance(), &TutorialManager::stepChanged,
+            this, [this](int stepIndex) {
+        Q_UNUSED(stepIndex)
+        const TutorialManager::Step* step = TutorialManager::instance()->currentStep();
+        if (!step) return;
+
+        if (!step->targetWidget.isEmpty()) {
+            // 查找目标控件并获取其几何位置
+            QWidget* target = findChild<QWidget*>(step->targetWidget);
+            if (target) {
+                QRect globalRect = target->geometry();
+                m_tutorialOverlay->setHighlightRect(globalRect);
+            } else {
+                m_tutorialOverlay->clearHighlight();
+            }
+        } else {
+            m_tutorialOverlay->clearHighlight();
+        }
+    });
+
+    // 首次进入且未完成过教程，自动启动
+    if (!TutorialManager::instance()->hasCompletedBefore()) {
+        QTimer::singleShot(800, this, [this]() {
+            m_tutorialOverlay->startTutorial();
+        });
+    }
+}
+
+void MeritHall::checkTutorialOnShow()
+{
+    if (TutorialManager::instance()->isActive() && m_tutorialOverlay) {
+        m_tutorialOverlay->show();
+        m_tutorialOverlay->raise();
+    }
 }
